@@ -1,0 +1,29 @@
+/*
+ * Neutral default branding for generated Slidev decks (mandate-toolkit template).
+ * Grayscale palette + a generic accent blue - restyle freely per mandate.
+ */
+
+:root {
+  --brand-accent: #2563eb;      /* generic accent blue - replace with client/brand color */
+  --brand-gray-900: #111827;
+  --brand-gray-700: #374151;
+  --brand-gray-100: #f3f4f6;
+}
+
+.slidev-layout {
+  color: var(--brand-gray-900);
+}
+
+.slidev-layout h1,
+.slidev-layout h2 {
+  color: var(--brand-gray-900);
+}
+
+.slidev-layout a {
+  color: var(--brand-accent);
+}
+
+.slidev-layout.cover,
+.slidev-layout.section {
+  background: var(--brand-gray-100);
+}

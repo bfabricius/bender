@@ -1,0 +1,142 @@
+# __MANDATE__ — Projekt-Assistent
+
+Dieses Repository nutzt den **Mandate-Toolkit**-Workflow: ein Markdown-Memory-Index als
+Single Source of Truth (SSOT), optional OpenSpec fuer Requirements Engineering, und ein
+Satz Drop-in-PowerShell-Tools fuer Export/Publish/Status. Diese README ist die Kurzanleitung
+fuer den Umgang damit.
+
+## Inhaltsverzeichnis
+
+1. [Memory-Index: Ingest & Pflege](#1-memory-index-ingest--pflege)
+2. [log.md](#2-logmd)
+3. [Artefakte exportieren](#3-artefakte-exportieren)
+4. [OpenSpec: offene Punkte klaeren](#4-openspec-offene-punkte-klaeren)
+5. [OpenSpec: Change-Proposals spezifizieren](#5-openspec-change-proposals-spezifizieren)
+6. [Task-Linking zu einem Ticketsystem](#6-task-linking-zu-einem-ticketsystem)
+7. [Retrospektiven](#7-retrospektiven)
+8. [Tool-Referenz](#8-tool-referenz)
+
+---
+
+## 1. Memory-Index: Ingest & Pflege
+
+Der Memory-Index liegt unter `mem-index/` und ist die **einzige Quelle der Wahrheit** fuer
+dieses Mandat. Alle Regeln dazu (Leseprotokoll, Node-Update/-Split/-Add, Ingest-Workflow,
+File-access restriction) stehen in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
+
+**Erster Schritt nach dem Bootstrap:** Wurde beim Bootstrap ein Client-Input-Ordner
+angegeben, im Copilot Chat `/bootstrap-mandate` ausfuehren — das befuellt die leeren
+`[PLATZHALTER]` in `mem-index/` und in `.github/copilot-instructions.md` aus dem Client-Input.
+
+**Danach laufend:** Neue Client-Dokumente kommen nach `input_client-docs/`; Copilot ingested
+sie gemaess dem "Ingest workflow" in den Instructions (Node lesen -> aktualisieren -> Mapping
+in `00_INDEX.md` nachziehen -> offene Fragen ergaenzen -> `log.md`-Eintrag).
+
+Begriffe/Abkuerzungen gehoeren ins Glossar [`mem-index/14_Glossar.md`](mem-index/14_Glossar.md)
+statt mehrfach in einzelnen Nodes definiert zu werden.
+
+## 2. log.md
+
+`mem-index/log.md` ist **append-only** und protokolliert jede inhaltliche Aenderung am Index
+(Typen: `ingest`, `update`, `add`, `remove`, `resolve`, `query`, `lint`, `retro`). Bestehende
+Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
+
+```markdown
+## [YYYY-MM-DD] typ | Kurzbeschreibung
+
+**Aktion:** ...
+**Geaenderte Nodes:** [[node1]], [[node2]]
+**Details:** optional
+
+---
+```
+
+`./project-status.ps1` liest u. a. dieses Log fuer eine schnelle Uebersicht (siehe Abschnitt 8).
+
+## 3. Artefakte exportieren
+
+| Ziel | Tool |
+|---|---|
+| Memory-Index als ZIP oder statische Website exportieren | `./export-mem-index.ps1` |
+| Einzelne Markdown-Datei(en)/Ordner als PDF exportieren | `./export-md-to-pdf.ps1` |
+| Memory-Index in ein GitLab-Wiki publizieren | `./publish-wiki.ps1 -WikiUrl <git-url>` |
+| Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Copilot-Chat: `/slidev-praesentation` |
+
+Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
+aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
+
+## 4. OpenSpec: offene Punkte klaeren
+
+_Nur relevant, wenn die Requirements-Engineering-Phase gewaehlt wurde (`openspec-sdd/` vorhanden)._
+
+Fuer einen neuen Themenblock zuerst `/analysis-boot-workstream <Name>` im Copilot Chat
+ausfuehren — das erarbeitet die fachlichen Grundlagen und das Vorgehen als zwei Dateien in
+`analyse-sprint/`. Danach `/workstream-openspec-prozess <Name>` ausfuehren: dieser Agent
+begleitet Schritt fuer Schritt durch die ersten Schritte des Leitfadens
+([`analyse-sprint/openspec-prozess-leitfaden.md`](analyse-sprint/openspec-prozess-leitfaden.md)) —
+Triage der offenen IDs, `proposal.md`, `design.md` (Fakten und Optionen), Evidenz sammeln
+(Workshop/Review/Spike) und den Entscheid dokumentieren. Diese Phase eignet sich, um offene
+Punkte aus `mem-index/08_Offene-Fragen.md` systematisch in entscheidungsreife Grundlagen zu
+ueberfuehren, bevor irgendetwas als Anforderung festgeschrieben wird.
+
+## 5. OpenSpec: Change-Proposals spezifizieren
+
+Sobald ein Entscheid vorliegt (Schritt 4 des Leitfadens), fuehrt derselbe Agent
+(`/workstream-openspec-prozess`) weiter durch `spec.md` (testbare Requirements), das
+Readiness-Gate, `tasks.md` (Arbeitspakete) und die Umsetzung bis zur Abnahme/Baseline
+(`archive`). `validate --strict` prueft dabei nur die **Form**, nie die fachliche Richtigkeit
+— das bleibt Aufgabe von Success Lead/Architekt.
+
+## 6. Task-Linking zu einem Ticketsystem
+
+_Nur relevant, wenn eine Umsetzungsphase vorgesehen ist._
+
+Taskboard-URL: __TASKBOARD__ (siehe auch [`mandate.config.json`](mandate.config.json)).
+
+Empfohlene Konvention: beim Anlegen technischer Tickets aus `openspec-sdd/openspec/changes/<change>/tasks.md`
+je Ticket die OpenSpec-Task-Kennung im Titel/der Beschreibung referenzieren und umgekehrt in
+`tasks.md` die Ticket-ID ergaenzen, z. B.:
+
+```markdown
+- [ ] TASK-123: <Titel> (Ticket: <Taskboard-URL>/TASK-123)
+```
+
+So bleibt in beide Richtungen nachvollziehbar, welches Ticket welchen OpenSpec-Task umsetzt.
+
+## 7. Retrospektiven
+
+Im Copilot Chat `/retrospektive [Task-Name]` ausfuehren. Der Agent fuehrt durch bestehende
+Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
+dir priorisierte Action Items ab. Alles landet in
+[`mem-index/15_Retrospektiven-und-Action-Items.md`](mem-index/15_Retrospektiven-und-Action-Items.md)
+(append-only: `R-XX` Retro-Eintraege, `AI-XX` Action Items).
+
+## 8. Tool-Referenz
+
+Installierte Drop-in-Tools in diesem Projekt:
+
+__TOOLLIST__
+
+| Tool | Zweck |
+|---|---|
+| `export-mem-index.ps1` | Memory-Index als flaches Markdown-ZIP oder als statische Quartz-Website exportieren |
+| `export-md-to-pdf.ps1` | Beliebige Markdown-Datei(en)/Ordner als PDF exportieren (Browser-Headless, keine LLM-Tokens) |
+| `publish-wiki.ps1` | Memory-Index in ein GitLab-Wiki publizieren (isolierter Unterordner) |
+| `project-status.ps1` | Read-only Statusdashboard: Ingest-Historie, Stakeholder, Requirements-Traceability, OpenSpec-Status |
+| `glossar-suche.ps1` | Schnelle lokale Glossar-/ID-Suche (kein LLM, reines Regex) |
+| `search-index.ps1` | Interaktive Volltext-Suche (REPL, Pfeiltasten-Navigation) ueber mem-index/analyse-sprint/openspec-sdd, fuzzy-tolerant |
+| `install-openspec-sdd.ps1` | OpenSpec-Workspace (nach)installieren/erweitern |
+| `build-findings-dashboard.ps1` | Cross-Workstream-Findings-Dashboard aus mem-index + OpenSpec-Changes bauen (HTML + Markdown) |
+| `apply-findings-status-changes.ps1` | Im Findings-Dashboard gesammelte Status-Aenderungen ins Overlay uebernehmen |
+| `seed-openspec-from-mem-index.ps1` | Reproduzierbares OpenSpec-Seed-Paket aus kuratierten mem-index-Nodes erzeugen |
+
+> `build-findings-dashboard.ps1` erwartet F-/G- als Markdown-**Tabellenzeilen** (`| F-01 | ... |`) in
+> `08_Offene-Fragen.md`/`05_Gap-Analyse.md` (zusaetzlich zu den `### F-01 — ...`-Detailabschnitten aus
+> dem Skelett) und K- als `### K-01 — ...`-Abschnitte, sobald ein Konflikt-Register gefuehrt wird.
+> Ergaenze bei Bedarf eine Kurzreferenz-Tabelle oben in der jeweiligen Node, sobald das Dashboard
+> genutzt werden soll — ohne Tabelle liefert es 0 Findings, ohne Fehler.
+
+Details/Parameter je Tool: `Get-Help ./<script>.ps1 -Full`.
+
+---
+_Generiert am __DATE__ durch `bootstrap-wizard.ps1` (Mandate-Toolkit)._

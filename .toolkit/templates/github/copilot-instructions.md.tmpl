@@ -1,0 +1,173 @@
+# GitHub Copilot Instructions — __MANDATE__
+
+## Project context
+
+This workspace is a **markdown-only research/consulting project**.
+[PLATZHALTER — 2–3 Sätze: Auftraggeber, Mandat, Ziel der Analyse.]
+
+- **Auftraggeber:** [PLATZHALTER]
+- **Mandatsziel:** [PLATZHALTER]
+- **Session-Sprache:** [PLATZHALTER — z. B. Deutsch] (diese Instructions sind auf Englisch für Präzision).
+
+> [!TIP]
+> Fülle die Platzhalter oben aus dem Client-Input-Inventar
+> (`mem-index/_client-input-inventory.md`) und den befüllten Index-Nodes.
+
+---
+
+## Mandate Config
+
+Projekt-Metadaten (Kunde, ROLX-Projektnummer, Google-Drive-URL, Projektleiter, gewählte
+Phasen, Taskboard-URL) liegen in [`mandate.config.json`](../mandate.config.json) im
+Projekt-Root. Beim Verlinken von OpenSpec-Tasks zu technischen Tickets die dortige
+`taskboardUrl` verwenden (siehe README.md, Abschnitt "Task-Linking").
+
+---
+
+## Memory Index — Location & Structure
+
+Die verifizierte Wissensbasis liegt als verlinkter Markdown-Baum unter:
+
+```
+mem-index/
+```
+
+### Index-Dateien (in Navigationsreihenfolge)
+
+| Datei | Zweck |
+|---|---|
+| `00_INDEX.md` | Einstieg · Navigation · Quelldokument-Mapping |
+| `01_Projektkontext.md` | Mandat, Ziel, Scope, Deliverables |
+| `02_Stakeholder.md` | Ansprechpartner, Rollen, Interessen |
+| `03_Anforderungen.md` | Funktionale & nicht-funktionale Anforderungen |
+| `04_IST-Analyse.md` | Ausgangslage / IST-Zustand |
+| `05_Gap-Analyse.md` | Lücken, Pain-Points, Priorisierung |
+| `06_Constraints.md` | Budget, Timeline, Technik, Rahmenbedingungen |
+| `07_Loesungsansatz.md` | Lösungsoptionen, Empfehlung, Roadmap |
+| `08_Offene-Fragen.md` | Offene Fragen mit Status (🔴🟠🟡) |
+| `14_Glossar.md` | Glossar & Domänensprache · Single Source of Truth |
+| `15_Retrospektiven-und-Action-Items.md` | Retro-Log + globale Action-Item-Liste |
+| `log.md` | Append-only Änderungs-Log |
+
+> Weitere Nodes (z. B. Governance, Personas/Use-Cases, ein domänenspezifisches
+> Objektmodell) können bei Bedarf ergänzt werden — siehe "Neue Node hinzufügen" unten.
+
+### Token-effizientes Leseprotokoll
+1. **Immer zuerst `00_INDEX.md` lesen.** Enthält Navigationsbaum + Quick-Navigation.
+2. **Nur zu relevanten Nodes navigieren** (1–3), über die Quick-Navigation / Wiki-Links `[[datei]]`.
+3. **Selektiv eskalieren** — weitere Nodes nur bei domänenübergreifenden Fragen.
+
+### Empfohlene Lesereihenfolge nach Fragetyp
+| Fragetyp | Zuerst | Danach |
+|---|---|---|
+| Mandat / Scope | `01_Projektkontext.md` | `03_Anforderungen.md` |
+| Beteiligte | `02_Stakeholder.md` | `01_Projektkontext.md` |
+| IST / Gap | `04_IST-Analyse.md` | `05_Gap-Analyse.md` |
+| Lösung / Empfehlung | `07_Loesungsansatz.md` | `05_Gap-Analyse.md` |
+| Blocker | `08_Offene-Fragen.md` | referenzierte Nodes |
+
+### Key Constraints — immer anwenden ohne erneutes Lesen
+> [!TIP] Trage hier die verifizierten harten Rahmenbedingungen des Mandats ein
+> (aus `06_Constraints.md`), damit sie in jeder Antwort ohne Datei-Lesen gelten.
+- [PLATZHALTER — Constraint 1]
+- [PLATZHALTER — Constraint 2]
+
+---
+
+## Maintaining the memory index
+
+### Node aktualisieren, wenn
+- neues Quellmaterial bestehende Inhalte ergänzt oder widerspricht,
+- eine offene Frage geklärt wird,
+- eine Entscheidung sich ändert,
+- ein Fehler / veraltete Information gefunden wird.
+
+### Neue Node hinzufügen, wenn
+- eine neue Domäne eingeführt wird, die in keine bestehende Node passt,
+- ein neues Client-Dokument eine eigene Analyse rechtfertigt.
+
+### Node splitten, wenn sie ~400 Zeilen überschreitet und klar trennbare Sub-Themen enthält.
+
+---
+
+## Log entry protocol
+
+Jede Änderung am Index **muss** in `log.md` protokolliert werden.
+
+### Format
+```markdown
+## [YYYY-MM-DD] typ | Kurzbeschreibung
+
+**Aktion:** Ein Satz was gemacht wurde.
+**Geänderte Nodes:** [[node1]], [[node2]]
+**Details:** Optional.
+
+---
+```
+
+### Eintragstypen
+| Typ | Wann |
+|---|---|
+| `ingest` | Neues Quelldokument aufgenommen |
+| `update` | Bestehende Node inhaltlich geändert |
+| `add` | Neue Node erstellt |
+| `remove` | Node gelöscht / zusammengeführt |
+| `resolve` | Offene Frage geklärt |
+| `query` | Wichtige Abfrage mit Ergebnis dokumentiert |
+| `lint` | Konsistenzprüfung (Links, offene Fragen) |
+| `retro` | Retrospektive erfasst und/oder Action Items in [[15_Retrospektiven-und-Action-Items]] erstellt/aktualisiert |
+
+### Regeln
+- Log ist **append-only** — bestehende Einträge nie ändern/löschen.
+- Neue Einträge immer **unten** anhängen. Einträge auf Deutsch.
+- Erste Zeile exakt `## [YYYY-MM-DD] typ | ...` (grep-parsebar).
+
+---
+
+## Ingest workflow (neues Quelldokument)
+
+> Der Slash-Agent `/ingest-docs` führt diesen Workflow interaktiv aus (Kandidaten-Erkennung,
+> Vollständigkeits-Check, Pre-Processing-Analyse, Bestätigungs-Gates) - siehe
+> `.github/prompts/ingest-docs.prompt.md`.
+
+1. `00_INDEX.md` lesen, Ziel-Node(s) bestimmen.
+2. Ziel-Node(s) vor dem Editieren lesen.
+3. Node(s) aktualisieren/erstellen — Zusammenfassung oben, Detailinhalt unten.
+4. Quelldokument-Mapping in `00_INDEX.md` aktualisieren.
+5. `08_Offene-Fragen.md` ergänzen, falls neue offene Fragen entstehen.
+6. `ingest`-Eintrag an `log.md` anhängen.
+7. Commit: `ingest: <kurze Beschreibung der Quelle>`.
+__COSTSECTION__
+---
+
+## Response discipline
+
+- **Immer aus dem Index antworten** — nichts erfinden oder über das Dokumentierte hinaus extrapolieren.
+- Fehlt Information → sagen und als Kandidat für `08_Offene-Fragen.md` markieren.
+- Bei Empfehlungen zuerst die Constraints prüfen.
+- Bei Berichtserstellung explizit nennen, welche Index-Nodes als Quelle dienten.
+- `log.md` nur durch Anhängen neuer Einträge unten verändern.
+
+### File access restriction — strictly enforced
+> [!IMPORTANT] Im Normalbetrieb (Q&A) **keine** Dateien ausserhalb von `mem-index/` lesen.
+>
+> **Erlaubt (Normalbetrieb):** nur Dateien in `mem-index/`.
+>
+> **Verboten (Normalbetrieb):** alle anderen Dateien — inkl. Roh-Quelldokumente im
+> Client-Input-Ordner — **ausser** der User löst explizit einen **Ingest-Workflow** aus
+> (Stichworte "ingest" / "neues Quelldokument").
+>
+> **Rationale:** Der Memory-Index ist die einzige Quelle der Wahrheit. Roh-Quellen im
+> Q&A zu lesen umgeht die verifizierte, strukturierte Wissensbasis.
+
+---
+
+## Source documents reference
+
+Roh-Quelldokumente (Client-Input) — **nicht lesen, ausser bei explizitem Ingest-Workflow**:
+
+```
+__CLIENTFOLDER__
+```
+
+Vollständiges Inventar: `mem-index/_client-input-inventory.md`.
