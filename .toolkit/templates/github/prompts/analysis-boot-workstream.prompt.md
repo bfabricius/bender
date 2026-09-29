@@ -60,7 +60,7 @@ Wenn der Nutzer eine Uebersicht wuenscht (z. B. "liste die Workstreams", "welche
 
 ## Schritt 3 — Faktenbasis aus dem Memory Index sammeln
 
-1. Lies `mem-index/00_INDEX.md` und navigiere gezielt zu den fuer den Workstream relevanten Nodes — typischerweise `03_Anforderungen`, `05_Gap-Analyse`, `06_Constraints`, `08_Offene-Fragen`, `14_Glossar`, sowie alle weiteren mandatsspezifischen Nodes (z. B. `09_...` und hoeher), die thematisch zum Workstream passen.
+1. Lies `mem-index/00_INDEX.md` und navigiere gezielt zu den fuer den Workstream relevanten Nodes — typischerweise `03_Anforderungen`, `05_Gap-Analyse`, `06_Constraints`, `08_Offene-Fragen`, `14_Glossar`, sowie alle weiteren mandatsspezifischen Nodes (z. B. `10_...` und hoeher), die thematisch zum Workstream passen.
 2. Sammle die zum Workstream gehoerenden `UC-`/`FA-`/`NFA-`/`OP-`-Anforderungen, die offenen Fragen `F-` und ggf. Konflikte `K-` (sofern das Mandat ein Konflikt-Register fuehrt).
 3. Notiere, was belegt ist und was offen bzw. widerspruechlich ist.
 

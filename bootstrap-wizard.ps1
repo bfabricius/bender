@@ -267,7 +267,7 @@ Write-Host '--- Schritt 1/9: Copilot-Instructions und Slash-Agents ---' -Foregro
 
 Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'github/copilot-instructions.md.tmpl') -DestPath (Join-Path $root '.github/copilot-instructions.md') -Tokens $tokens
 
-$alwaysOnPrompts = @('bootstrap-mandate.prompt.md', 'retrospektive.prompt.md', 'slidev-praesentation.prompt.md', 'ingest-docs.prompt.md')
+$alwaysOnPrompts = @('bootstrap-mandate.prompt.md', 'retrospektive.prompt.md', 'slidev-praesentation.prompt.md', 'ingest-docs.prompt.md', 'pflege-master-schedule.prompt.md')
 $rePrompts       = @('analysis-boot-workstream.prompt.md', 'workstream-openspec-prozess.prompt.md')
 
 foreach ($p in $alwaysOnPrompts) {
@@ -348,7 +348,12 @@ if ($clientFolderValid) {
 Write-Host ''
 Write-Host '--- Schritt 5/9: Memory-Index-Skelett ---' -ForegroundColor Cyan
 
-Get-ChildItem -LiteralPath (Join-Path $tplDir 'mem-index') -Filter '*.md' | ForEach-Object {
+# *.md (Fliesstext-Nodes) und *.json (z. B. der Master-Schedule-Skeleton, 09_Master-Schedule.json)
+# werden beide als Node-Vorlagen behandelt, damit zukuenftige strukturierte Nodes hier ohne
+# Sonderfall ergaenzt werden koennen. Zwei -Filter-Aufrufe statt -Include, weil -Include bei
+# Get-ChildItem nur mit einem wildcard-aufgeloesten -Path filtert, nicht mit -LiteralPath.
+$memIndexTplDir = Join-Path $tplDir 'mem-index'
+@(Get-ChildItem -LiteralPath $memIndexTplDir -Filter '*.md') + @(Get-ChildItem -LiteralPath $memIndexTplDir -Filter '*.json') | ForEach-Object {
     Copy-TemplateFile -TemplatePath $_.FullName -DestPath (Join-Path $root "mem-index/$($_.Name)") -Tokens $tokens
 }
 
@@ -425,7 +430,7 @@ if ($clientFolderValid) {
 Write-Host ''
 Write-Host '--- Schritt 6/9: Drop-in-Tooling ---' -ForegroundColor Cyan
 
-$alwaysOnScripts = @('export-mem-index.ps1', 'export-md-to-pdf.ps1', 'publish-wiki.ps1', 'project-status.ps1', 'glossar-suche.ps1', 'convert-docs-to-text.ps1', 'search-index.ps1')
+$alwaysOnScripts = @('export-mem-index.ps1', 'export-md-to-pdf.ps1', 'publish-wiki.ps1', 'project-status.ps1', 'glossar-suche.ps1', 'convert-docs-to-text.ps1', 'search-index.ps1', 'schedule-wizard.ps1', 'build-master-schedule-editor.ps1', 'apply-master-schedule-changes.ps1')
 $reScripts       = @('install-openspec-sdd.ps1', 'build-findings-dashboard.ps1', 'apply-findings-status-changes.ps1', 'seed-openspec-from-mem-index.ps1')
 
 function Install-Script {

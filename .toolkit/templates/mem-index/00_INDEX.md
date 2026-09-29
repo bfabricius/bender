@@ -16,13 +16,14 @@ mem-index/
 ├── 06_Constraints.md            ← Budget, Timeline, Technik, Rahmenbedingungen
 ├── 07_Loesungsansatz.md         ← Lösungsoptionen, Empfehlung, Roadmap
 ├── 08_Offene-Fragen.md          ← Offene Fragen mit Status (🔴🟠🟡)
+├── 09_Master-Schedule.md        ← Planungs-/Lieferansicht (Etappen, Lanes, Arbeitspakete) - SSOT in 09_Master-Schedule.json
 ├── 14_Glossar.md                ← Glossar & Domänensprache · Single Source of Truth
 ├── 15_Retrospektiven-und-Action-Items.md  ← Retro-Log + globale Action-Item-Liste
 ├── _client-input-inventory.md   ← Auto-Inventar des Client-Input-Ordners
 └── log.md                       ← Append-only Änderungs-Log
 ```
 
-> Weitere Nodes (z. B. `09_...` für Governance, Personas, ein domänenspezifisches
+> Weitere Nodes (z. B. `10_...` für Governance, Personas, ein domänenspezifisches
 > Objektmodell o. Ä.) können jederzeit ergänzt werden, wenn eine neue Domäne das
 > rechtfertigt — siehe "Neue Node hinzufügen" in `.github/copilot-instructions.md`.
 > Trage sie dann hier im Navigationsbaum nach.
@@ -39,6 +40,7 @@ mem-index/
 | Rahmenbedingungen | [[06_Constraints]] | [[01_Projektkontext]] |
 | Lösung / Empfehlung / Roadmap | [[07_Loesungsansatz]] | [[05_Gap-Analyse]] |
 | Blocker / offene Punkte | [[08_Offene-Fragen]] | referenzierte Nodes |
+| Master-Schedule / Termine / Lanes / Arbeitspakete | [[09_Master-Schedule]] | `./schedule-wizard.ps1`, `/pflege-master-schedule` |
 | Begriff / Abkürzung nachschlagen | [[14_Glossar]] | — |
 | Retrospektiven / Action Items | [[15_Retrospektiven-und-Action-Items]] | — |
 | Volle Synthese (Bericht) | Alle Nodes 01→08 | — |

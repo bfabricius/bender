@@ -1,0 +1,10 @@
+{
+  "generated": "__DATE__",
+  "project": {
+    "name": "__MANDATE__",
+    "startDate": "",
+    "endDate": ""
+  },
+  "milestones": [],
+  "lanes": []
+}

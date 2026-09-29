@@ -10,11 +10,12 @@ fuer den Umgang damit.
 1. [Memory-Index: Ingest & Pflege](#1-memory-index-ingest--pflege)
 2. [log.md](#2-logmd)
 3. [Artefakte exportieren](#3-artefakte-exportieren)
-4. [OpenSpec: offene Punkte klaeren](#4-openspec-offene-punkte-klaeren)
-5. [OpenSpec: Change-Proposals spezifizieren](#5-openspec-change-proposals-spezifizieren)
-6. [Task-Linking zu einem Ticketsystem](#6-task-linking-zu-einem-ticketsystem)
-7. [Retrospektiven](#7-retrospektiven)
-8. [Tool-Referenz](#8-tool-referenz)
+4. [Master-Schedule: Planung & Lieferansicht](#4-master-schedule-planung--lieferansicht)
+5. [OpenSpec: offene Punkte klaeren](#5-openspec-offene-punkte-klaeren)
+6. [OpenSpec: Change-Proposals spezifizieren](#6-openspec-change-proposals-spezifizieren)
+7. [Task-Linking zu einem Ticketsystem](#7-task-linking-zu-einem-ticketsystem)
+8. [Retrospektiven](#8-retrospektiven)
+9. [Tool-Referenz](#9-tool-referenz)
 
 ---
 
@@ -65,7 +66,30 @@ Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
 Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
 aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
 
-## 4. OpenSpec: offene Punkte klaeren
+## 4. Master-Schedule: Planung & Lieferansicht
+
+Der Master-Schedule (Start-/Enddatum, Etappen/Meilensteine, Arbeitsstroeme mit Owner,
+Arbeitspakete mit Prioritaet/Aufwand/Status) liegt strukturiert in
+[`mem-index/09_Master-Schedule.json`](mem-index/09_Master-Schedule.json) (Single Source of
+Truth); [`mem-index/09_Master-Schedule.md`](mem-index/09_Master-Schedule.md) ist eine daraus
+auto-generierte Zusammenfassung (nie von Hand editieren).
+
+Zwei unabhaengige Wege, um ihn zu pflegen:
+
+- **Konversationell:** im Copilot Chat `/pflege-master-schedule` ausfuehren - der Agent liest den
+  aktuellen Stand, erarbeitet Aenderungen mit dir und schreibt erst nach expliziter Bestaetigung.
+- **Interaktiver Wizard + Web-Editor:** `./schedule-wizard.ps1` fuer die Ersterfassung/laufende
+  Pflege per Menue; `./build-master-schedule-editor.ps1` erzeugt `master-schedule-editor.html`
+  (Zeitachse mit Lanes/Arbeitspaketen/Meilensteinen, Heute-Linie, Fortschritts-Linie pro Lane,
+  FTE-pro-Kalenderwoche-Ansicht, Filter nach Arbeitsstrom/Datumsbereich, PNG-/PDF-Export der
+  gefilterten Ansicht, "Aktuelle Daten neu laden" mit Bestaetigung). Aenderungen aus dem Editor
+  werden erst durch `./apply-master-schedule-changes.ps1` (nach Bestaetigung inkl. Diff-Anzeige)
+  in den Memory-Index uebernommen.
+
+Beide Wege schreiben in dieselbe JSON-Datei - nicht gleichzeitig in beiden Wegen an derselben
+Stelle arbeiten, um Konflikte zu vermeiden (kein Locking vorgesehen).
+
+## 5. OpenSpec: offene Punkte klaeren
 
 _Nur relevant, wenn die Requirements-Engineering-Phase gewaehlt wurde (`openspec-sdd/` vorhanden)._
 
@@ -79,7 +103,7 @@ Triage der offenen IDs, `proposal.md`, `design.md` (Fakten und Optionen), Eviden
 Punkte aus `mem-index/08_Offene-Fragen.md` systematisch in entscheidungsreife Grundlagen zu
 ueberfuehren, bevor irgendetwas als Anforderung festgeschrieben wird.
 
-## 5. OpenSpec: Change-Proposals spezifizieren
+## 6. OpenSpec: Change-Proposals spezifizieren
 
 Sobald ein Entscheid vorliegt (Schritt 4 des Leitfadens), fuehrt derselbe Agent
 (`/workstream-openspec-prozess`) weiter durch `spec.md` (testbare Requirements), das
@@ -87,7 +111,7 @@ Readiness-Gate, `tasks.md` (Arbeitspakete) und die Umsetzung bis zur Abnahme/Bas
 (`archive`). `validate --strict` prueft dabei nur die **Form**, nie die fachliche Richtigkeit
 — das bleibt Aufgabe von Success Lead/Architekt.
 
-## 6. Task-Linking zu einem Ticketsystem
+## 7. Task-Linking zu einem Ticketsystem
 
 _Nur relevant, wenn eine Umsetzungsphase vorgesehen ist._
 
@@ -103,7 +127,7 @@ je Ticket die OpenSpec-Task-Kennung im Titel/der Beschreibung referenzieren und 
 
 So bleibt in beide Richtungen nachvollziehbar, welches Ticket welchen OpenSpec-Task umsetzt.
 
-## 7. Retrospektiven
+## 8. Retrospektiven
 
 Im Copilot Chat `/retrospektive [Task-Name]` ausfuehren. Der Agent fuehrt durch bestehende
 Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
@@ -111,7 +135,7 @@ dir priorisierte Action Items ab. Alles landet in
 [`mem-index/15_Retrospektiven-und-Action-Items.md`](mem-index/15_Retrospektiven-und-Action-Items.md)
 (append-only: `R-XX` Retro-Eintraege, `AI-XX` Action Items).
 
-## 8. Tool-Referenz
+## 9. Tool-Referenz
 
 Installierte Drop-in-Tools in diesem Projekt:
 
@@ -129,6 +153,12 @@ __TOOLLIST__
 | `build-findings-dashboard.ps1` | Cross-Workstream-Findings-Dashboard aus mem-index + OpenSpec-Changes bauen (HTML + Markdown) |
 | `apply-findings-status-changes.ps1` | Im Findings-Dashboard gesammelte Status-Aenderungen ins Overlay uebernehmen |
 | `seed-openspec-from-mem-index.ps1` | Reproduzierbares OpenSpec-Seed-Paket aus kuratierten mem-index-Nodes erzeugen |
+| `schedule-wizard.ps1` | Interaktiver Wizard: Master-Schedule (Rahmendaten, Meilensteine, Arbeitsstroeme, Arbeitspakete) erfassen/pflegen |
+| `build-master-schedule-editor.ps1` | Interaktiven Master-Schedule-Web-Editor (`master-schedule-editor.html`) aus dem Memory-Index bauen |
+| `apply-master-schedule-changes.ps1` | Im Web-Editor gesammelte Master-Schedule-Aenderungen (nach Bestaetigung + Diff-Anzeige) in den Index uebernehmen |
+
+> Zusaetzlich zu den Skripten: Copilot-Chat-Slash-Agent `/pflege-master-schedule` fuer die
+> konversationelle Pflege des Master-Schedules, unabhaengig vom Web-Editor (siehe Abschnitt 4).
 
 > `build-findings-dashboard.ps1` erwartet F-/G- als Markdown-**Tabellenzeilen** (`| F-01 | ... |`) in
 > `08_Offene-Fragen.md`/`05_Gap-Analyse.md` (zusaetzlich zu den `### F-01 — ...`-Detailabschnitten aus
