@@ -88,9 +88,21 @@ $html2canvasJs = Get-CachedLibrary -Name 'html2canvas.min.js' -Url 'https://cdn.
 $jsPdfJs = Get-CachedLibrary -Name 'jspdf.umd.min.js' -Url 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js' -CacheDir $CacheDir -Reinstall:$Reinstall
 Write-Host '==> html2canvas/jsPDF bereit (Cache: .schedule-export/)' -ForegroundColor Green
 
-# Guard against a work-package/lane/milestone name containing "</script>" and breaking out of
-# the embedding <script> tag (the JSON is user-authored data; the cached libraries are not).
-$scheduleJsonEscaped = $scheduleRaw.Replace('</', '<\/')
+# Embed everything (libraries + JSON) as base64 rather than raw source text. A JS string literal
+# can only ever contain the base64 alphabet [A-Za-z0-9+/=], which cannot form "</script" or
+# "<!--" in any byte configuration - this is immune to script-tag-breakout regardless of what
+# byte sequences the payloads contain. Escaping only the literal "</script" substring (tried
+# first) was NOT sufficient in practice: jsPDF's own source contains this sequence as part of an
+# HTML template string used for its window/new-tab PDF-preview output mode, and re-embedding the
+# raw (still broken) source from a stale cached .js file reproduced the same failure - base64
+# sidesteps the whole class of issue instead of chasing individual dangerous substrings.
+function ConvertTo-Base64Utf8 {
+    param([string]$Text)
+    return [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Text))
+}
+$html2canvasB64 = ConvertTo-Base64Utf8 -Text $html2canvasJs
+$jsPdfB64 = ConvertTo-Base64Utf8 -Text $jsPdfJs
+$scheduleB64 = ConvertTo-Base64Utf8 -Text $scheduleRaw
 
 # ===========================================================================
 #  HTML-Template
@@ -242,10 +254,26 @@ $htmlTemplate = @'
   <div id="modal-box"></div>
 </div>
 
-<script>%%HTML2CANVAS%%</script>
-<script>%%JSPDF%%</script>
 <script>
-var INITIAL_SCHEDULE = %%SCHEDULE_JSON%%;
+// Libraries + data are embedded as base64 (JS string literals can only ever contain the base64
+// alphabet [A-Za-z0-9+/=], which cannot form "</script" or "<!--" in any byte configuration - so
+// this is immune to script-tag-breakout regardless of what byte sequences the payloads contain,
+// unlike embedding raw source directly (jsPDF's own source contains a literal "</script"
+// sequence in its window/new-tab PDF-preview HTML template, which broke earlier versions of
+// this generator that inlined it as-is).
+function decodeUtf8Base64(b64) {
+  var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+  return new TextDecoder('utf-8').decode(bytes);
+}
+function injectClassicScript(src) {
+  var s = document.createElement('script');
+  s.text = src;
+  document.head.appendChild(s);
+}
+injectClassicScript(decodeUtf8Base64('%%HTML2CANVAS_B64%%'));
+injectClassicScript(decodeUtf8Base64('%%JSPDF_B64%%'));
+
+var INITIAL_SCHEDULE = JSON.parse(decodeUtf8Base64('%%SCHEDULE_B64%%'));
 var PRIORITY_OPTIONS = ['Must', 'Should', 'Could', "Won't"];
 var STATUS_OPTIONS = ['To Do', 'In Progress', 'Done'];
 var STATUS_COLORS = { 'To Do': '#9ca3af', 'In Progress': '#f59e0b', 'Done': '#22c55e' };
@@ -723,9 +751,9 @@ renderAll();
 $html = $htmlTemplate.
     Replace('%%MANDATE%%', $mandateName).
     Replace('%%GENERATED%%', (Get-Date -Format 'yyyy-MM-dd HH:mm')).
-    Replace('%%HTML2CANVAS%%', $html2canvasJs).
-    Replace('%%JSPDF%%', $jsPdfJs).
-    Replace('%%SCHEDULE_JSON%%', $scheduleJsonEscaped)
+    Replace('%%HTML2CANVAS_B64%%', $html2canvasB64).
+    Replace('%%JSPDF_B64%%', $jsPdfB64).
+    Replace('%%SCHEDULE_B64%%', $scheduleB64)
 
 $enc = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText([System.IO.Path]::GetFullPath($OutPath), $html, $enc)
