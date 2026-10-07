@@ -1,5 +1,5 @@
 ---
-mode: agent
+name: slidev-praesentation
 description: Generiert interaktiv eine Slidev-Präsentation aus dem Memory-Index (optional weiteren Verzeichnissen) und legt sie lauffähig in export-artefacts/praesentationen/ ab.
 ---
 
@@ -31,7 +31,7 @@ Frage den User, **was** in die Präsentation soll:
 - **Zusätzliche Quellen nur auf Ansage:** Nennt der User weitere Verzeichnisse
   (z. B. `analyse-sprint/`), darfst du diese ebenfalls lesen.
   > Nur für diesen Präsentations-Workflow ist damit die File-access-Restriction aus
-  > `.github/copilot-instructions.md` (Q&A: nur `mem-index/`) bewusst aufgehoben — aber
+  > `AGENTS.md` (Q&A: nur `mem-index/`) bewusst aufgehoben — aber
   > **ausschliesslich für die vom User explizit genannten Pfade**. Lies keine weiteren
   > Verzeichnisse ungefragt.
 - Erfinde nichts. Fehlt Inhalt in den freigegebenen Quellen, sag es und schlage vor, die
@@ -79,7 +79,7 @@ Teil des gemeinsamen Projekts `export-artefacts/praesentationen/`.
 
 ## Schritt 6 — Branding
 Standard ist ein **neutrales Graustufen-Theme** mit generischem Akzent-Blau
-(`styles/branding.css`, siehe Key Constraints in `.github/copilot-instructions.md` für ein
+(`styles/branding.css`, siehe Key Constraints in `AGENTS.md` für ein
 ggf. mandatsspezifisches Farbschema), Mobile-First. Passe die Farben in `branding.css`
 an das Corporate Design des Mandats an, sobald bekannt. Wünscht der User ein anderes
 Theme (z. B. `seriph`), passe headmatter `theme:` entsprechend an.

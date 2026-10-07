@@ -1,5 +1,4 @@
 ---
-mode: agent
 name: workstream-openspec-prozess
 description: Begleitet einen Analyse-Sprint-Workstream schrittweise durch die 10 Schritte des OpenSpec-Prozess-Leitfadens, merkt sich den Fortschritt sitzungsuebergreifend und pflegt den zugehoerigen OpenSpec-Change.
 argument-hint: Name des Workstreams (optional)
@@ -8,7 +7,7 @@ argument-hint: Name des Workstreams (optional)
 # workstream-openspec-prozess
 
 Du begleitest das Team dabei, fuer **einen Analyse-Sprint-Workstream** die
-[analyse-sprint/openspec-prozess-leitfaden.md](../../analyse-sprint/openspec-prozess-leitfaden.md)
+[analyse-sprint/openspec-prozess-leitfaden.md](../../../analyse-sprint/openspec-prozess-leitfaden.md)
 Schritt fuer Schritt durchzuarbeiten. Der Leitfaden hat **10 Schritte (0–9)**:
 
 | # | Schritt | Kernbefehl(e) |
@@ -29,8 +28,8 @@ bearbeitenden Schritt **immer** den vollen Abschnitt im Leitfaden (Ziel, Wer, Wa
 Fertig-wenn) und wende genau diesen an. Erfinde keine eigene Variante.
 
 Verwechsle diese 10 Leitfaden-Schritte **nicht** mit der 7-schrittigen "Bearbeitungsabfolge" in
-den einzelnen `*_workstream-<slug>.md`-Dateien (Abschnitt 3 dort, erzeugt von
-`/analysis-boot-workstream`). Diese Datei ist nur **Quelle** fuer Scope, Rollen und IDs des
+den einzelnen `*_workstream-<slug>.md`-Dateien (Abschnitt 3 dort, erzeugt von der Skill
+`analysis-boot-workstream`). Diese Datei ist nur **Quelle** fuer Scope, Rollen und IDs des
 Workstreams — der prozessuale Fortschritt richtet sich ausschliesslich nach den 10
 Leitfaden-Schritten.
 
@@ -52,9 +51,9 @@ Leitfaden-Schritten.
 ## Schritt A — Workstream bestimmen (immer zuerst)
 
 1. Wenn kein Workstream als Argument uebergeben wurde, oder der Nutzer eine Uebersicht wuenscht
-   ("liste Workstreams", "Status"): ermittle die bekannten Workstreams wie in `/analysis-boot-workstream`
-   Schritt 0 beschrieben (eigener Katalog, falls vorhanden, sonst Ableitung aus
-   `analyse-sprint/*_workstream-*.md` und `openspec-sdd/openspec/changes/`). Reichere jede Zeile mit
+   ("liste Workstreams", "Status"): ermittle die bekannten Workstreams wie in der Skill
+   `analysis-boot-workstream` Schritt 0 beschrieben (eigener Katalog, falls vorhanden, sonst
+   Ableitung aus `analyse-sprint/*_workstream-*.md` und `openspec-sdd/openspec/changes/`). Reichere jede Zeile mit
    dem Fortschritt aus `analyse-sprint/_openspec-fortschritt/<slug>.md` an, falls vorhanden (sonst
    "kein Fortschritt erfasst"). Zeige eine Tabelle: Workstream | Slug | aktueller Schritt | naechster Schritt.
 2. Frage den Nutzer, an welchem Workstream gearbeitet werden soll. Ein Name, der noch nirgends
@@ -66,8 +65,8 @@ Leitfaden-Schritten.
 ## Schritt B — Kontext laden
 
 1. Suche in `analyse-sprint/` nach `*_grundlagen-<slug>.md` und `*_workstream-<slug>.md`.
-   - **Fehlt eine der beiden Dateien:** Erklaere dem Nutzer, dass der Workstream zuerst mit dem
-     Befehl `/analysis-boot-workstream` ausgearbeitet werden muss, biete an, diesen Befehl jetzt
+   - **Fehlt eine der beiden Dateien:** Erklaere dem Nutzer, dass der Workstream zuerst mit der
+     Skill `analysis-boot-workstream` ausgearbeitet werden muss, biete an, diesen Aufruf jetzt
      zu nennen/vorzubereiten, und **stoppe** den 10-Schritte-Prozess fuer diesen Workstream bis
      die Dateien existieren.
    - **Beide vorhanden:** Lies beide Dateien vollstaendig.
@@ -137,7 +136,7 @@ Frage: **weiter zum naechsten Schritt** oder **Korrektur an einem frueheren Schr
 
 1. Setze den gewaehlten Schritt im Tracker auf `in Arbeit`.
 2. Wende exakt die im Leitfaden fuer diesen Schritt beschriebene Vorgehensweise an: die dort
-   angegebenen Copilot-Prompt-Vorlagen ausfuellen (Quellen: Grundlagen-/Workstream-Datei,
+   angegebenen Prompt-Vorlagen ausfuellen (Quellen: Grundlagen-/Workstream-Datei,
    `mem-index/`, ggf. vorheriger Change-Inhalt) und die dort genannten OpenSpec-CLI-Befehle im
    Ordner `openspec-sdd` ausfuehren, sofern der Schritt einen Befehl vorsieht.
 3. Arbeite die Inhalte **gemeinsam mit dem Nutzer** aus — schlage Text vor, hole Bestaetigung
@@ -244,7 +243,7 @@ statt eines der drei Standardformate zu erzwingen.
 - Existieren bereits fruehere Workshop-Decks unter
   `export-artefacts/praesentationen/slides/openspecs/`, lehne Struktur/Format daran an (Headmatter-
   Stil, `layout: section`/`center`, Presenter-Notes, Branding via `styles/branding.css`). Existiert
-  noch keines, folge dem Vorgehen aus `/slidev-praesentation`.
+  noch keines, folge dem Vorgehen aus der Skill `slidev-praesentation`.
 - Inhalt fokussiert **ausschliesslich** auf die zu klaerenden Punkte (Kontext, Optionen, "Zu
   klaeren", "Wer entscheidet", "Beratung durch ..."). Der interne OpenSpec-Prozess (Schritte,
   Tracker, CLI-Befehle) wird in den Slides **nie** erwaehnt.
@@ -258,39 +257,3 @@ statt eines der drei Standardformate zu erzwingen.
 - Ablageort: derselbe Ordner wie die exportierte Slidev-Praesentation, falls in derselben
   Session erzeugt. Existiert noch kein Export-Ordner, einen neuen Ordner unter `export-artefacts/`
   vorschlagen und vom Nutzer **bestaetigen lassen** (er kann Ort/Namen aendern).
-
-#### Falls das Triage-Dokument exportiert wird
-
-- Ebenfalls als Kopie (nicht Verschiebung) in denselben Ordner wie die Slidev-Praesentation legen;
-  ohne Slidev-Export gilt dieselbe Ordner-Bestaetigungslogik wie beim `design.md`-Export.
-
-#### Fuer jeden Export: IDs ausschreiben?
-
-Frage bei jedem Export **explizit**: "Sollen mem-index-IDs immer ausgeschrieben und voll
-referenziert werden?" Bei Zustimmung: IDs durchgaengig im Fliesstext ausformulieren, die IDs nur
-noch in Klammern dahinter nennen (z. B. "Haertung der Masterkey-Ableitung (F-01)").
-
-#### Keine Em-Dashes in Exports
-
-In allen Export-Dokumenten (Slidev, `design-erklaert.md`, Triage-Kopie) keine Em-Dashes ("—")
-verwenden; stattdessen Doppelpunkt, Semikolon oder Komma je nach Satzbau.
-
-### Ausnahme: mem-index-Ingest ausserhalb Schritt 4/9
-
-Ergibt sich waehrend **irgendeinem** Schritt (0 bis 9, nicht nur 0 bis 3) eine **neue**, im
-Memory-Index noch nicht erfasste offene Frage/Option (z. B. eine vom Nutzer oder vom Team
-abgeleitete Ergaenzung), darf sie **nur nach expliziter Zustimmung des Nutzers** vorzeitig in
-`mem-index/08_Offene-Fragen.md` (bzw. einem projektspezifischen Konflikt-Register, falls
-vorhanden) nachgetragen werden, statt erst in Schritt 4/9. Dabei immer das Ingest-/Log-Protokoll
-der Repo-Instructions einhalten (Quelle, Datum, Grund, Log-Eintrag in `mem-index/log.md`, ggf.
-Mapping in `00_INDEX.md` ergaenzen) und die Ergaenzung klar als eigene Ableitung kennzeichnen,
-falls sie nicht direkt vom Kunden/Stakeholder vorgegeben wurde.
-
-## Regeln
-
-- Nur den fuer den gewaehlten Workstream/Schritt relevanten Kontext lesen, keine anderen
-  Workstreams oder Changes ungefragt veraendern.
-- Bei jeder Unklarheit ueber Vorgehen, Loeschungen oder Interpretation der Quellen zuerst
-  nachfragen statt anzunehmen.
-- Task-Linking zu einem technischen Ticketsystem (falls die Implementierungsphase vorgesehen ist):
-  siehe README.md, Abschnitt "Task-Linking", inkl. der `taskboardUrl` aus `mandate.config.json`.

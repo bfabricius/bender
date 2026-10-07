@@ -25,7 +25,7 @@ mem-index/
 
 > Weitere Nodes (z. B. `10_...` für Governance, Personas, ein domänenspezifisches
 > Objektmodell o. Ä.) können jederzeit ergänzt werden, wenn eine neue Domäne das
-> rechtfertigt — siehe "Neue Node hinzufügen" in `.github/copilot-instructions.md`.
+> rechtfertigt — siehe "Neue Node hinzufügen" in `AGENTS.md`.
 > Trage sie dann hier im Navigationsbaum nach.
 
 ## Quick-Navigation

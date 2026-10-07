@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions — __MANDATE__
+# Agent Instructions — __MANDATE__
 
 ## Project context
 
@@ -12,6 +12,11 @@ This workspace is a **markdown-only research/consulting project**.
 > [!TIP]
 > Fülle die Platzhalter oben aus dem Client-Input-Inventar
 > (`mem-index/_client-input-inventory.md`) und den befüllten Index-Nodes.
+
+> [!NOTE]
+> Diese Datei (`AGENTS.md`) gilt sowohl für GitHub Copilot (VS Code) als auch für OpenAI Codex —
+> beide lesen sie als geteilte, projektweite Agent-Instructions. Die Skills unter
+> `.agents/skills/` sind ebenfalls fuer beide Plattformen gemeinsam nutzbar.
 
 ---
 
@@ -127,9 +132,9 @@ Jede Änderung am Index **muss** in `log.md` protokolliert werden.
 
 ## Ingest workflow (neues Quelldokument)
 
-> Der Slash-Agent `/ingest-docs` führt diesen Workflow interaktiv aus (Kandidaten-Erkennung,
-> Vollständigkeits-Check, Pre-Processing-Analyse, Bestätigungs-Gates) - siehe
-> `.github/prompts/ingest-docs.prompt.md`.
+> Die Skill `ingest-docs` (`.agents/skills/ingest-docs/`) führt diesen Workflow interaktiv aus
+> (Kandidaten-Erkennung, Vollständigkeits-Check, Pre-Processing-Analyse, Bestätigungs-Gates) —
+> aufrufbar in Copilot per `/ingest-docs`, in Codex per `$ingest-docs` oder implizit.
 
 1. `00_INDEX.md` lesen, Ziel-Node(s) bestimmen.
 2. Ziel-Node(s) vor dem Editieren lesen.

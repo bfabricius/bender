@@ -1,5 +1,4 @@
 ---
-mode: agent
 name: retrospektive
 description: Fuehrt eine Team- oder Personen-Retrospektive durch (Notizen einlesen oder interaktiv erarbeiten), clustert die Punkte thematisch und pflegt Ergebnisse + priorisierte Action Items in mem-index/15_Retrospektiven-und-Action-Items.md.
 argument-hint: Task-Name (optional, z. B. ein Deliverable oder Workstream-Name)
@@ -8,7 +7,7 @@ argument-hint: Task-Name (optional, z. B. ein Deliverable oder Workstream-Name)
 # retrospektive
 
 Du begleitest den Nutzer durch eine **Retrospektive** (Team oder persoenlich) und haeltst die Ergebnisse
-strukturiert in [mem-index/15_Retrospektiven-und-Action-Items.md](../../mem-index/15_Retrospektiven-und-Action-Items.md)
+strukturiert in [mem-index/15_Retrospektiven-und-Action-Items.md](../../../mem-index/15_Retrospektiven-und-Action-Items.md)
 fest: was lief gut, was haette besser laufen koennen, thematische Cluster, und daraus abgeleitete,
 priorisierte Action Items in der globalen Tracker-Tabelle.
 
@@ -90,7 +89,7 @@ sofern der Nutzer nichts anderes nennt) sowie optional den Teilnehmenden.
 
 ## Schritt 5 — Node 15 aktualisieren
 
-1. Lies [mem-index/15_Retrospektiven-und-Action-Items.md](../../mem-index/15_Retrospektiven-und-Action-Items.md)
+1. Lies [mem-index/15_Retrospektiven-und-Action-Items.md](../../../mem-index/15_Retrospektiven-und-Action-Items.md)
    vollstaendig, ermittle die naechste freie `R-`- und `AI-`-Nummer.
 2. Falls in Schritt 1 ein neuer Task-Tag noetig war: ergaenze eine neue Zeile im Task-Register.
 3. Haenge im Abschnitt "Retrospektiven-Log" einen neuen Eintrag `### R-XX — <Kurztitel>` an (Datum,
@@ -102,7 +101,7 @@ sofern der Nutzer nichts anderes nennt) sowie optional den Teilnehmenden.
 
 ## Schritt 6 — Log-Eintrag anhaengen
 
-Haenge an `mem-index/log.md` einen Eintrag vom Typ `retro` an (Format wie im Root-`copilot-instructions.md`
+Haenge an `mem-index/log.md` einen Eintrag vom Typ `retro` an (Format wie im Root-`AGENTS.md`
 beschrieben):
 
 ```markdown

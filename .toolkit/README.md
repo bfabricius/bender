@@ -2,7 +2,8 @@
 
 Wiederverwendbares Repo-Template fuer Beratungs-/Analyse-Mandate: Memory-Index (Markdown-SSOT),
 optional OpenSpec-basiertes Requirements Engineering, ein Satz Drop-in-PowerShell-Tools
-(Export/Publish/Status/Suche) und die passenden GitHub-Copilot-Slash-Agents.
+(Export/Publish/Status/Suche) und die passenden Agent-Instructions (`AGENTS.md`) + Skills
+(`.agents/skills/`), nativ nutzbar sowohl mit GitHub Copilot (VS Code) als auch mit OpenAI Codex.
 
 ## Nutzung fuer ein neues Mandat
 
@@ -23,7 +24,7 @@ bootstrap-wizard.ps1        Einstiegspunkt (Fragebogen + Scaffolding)
   scripts/                  generalisierte Drop-in-Tools (Quelle, wird pro Mandat kopiert)
   templates/
     mem-index/              Memory-Index-Node-Vorlagen (00_INDEX, 01-08, 14, 15, log.md)
-    github/                 copilot-instructions.md + Slash-Agent-Prompts
+    agents/                 AGENTS.md.tmpl + skills/*/SKILL.md (Copilot + Codex gemeinsam)
     analyse-sprint/         OpenSpec-Prozess-Leitfaden (nur RE-Phase)
     branding/               neutrale Slidev-Default-Vorlage
     project-README.md.tmpl  wird zur README.md des neuen Mandats

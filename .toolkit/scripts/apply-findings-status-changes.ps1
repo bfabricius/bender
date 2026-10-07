@@ -7,8 +7,8 @@
     openspec-sdd/findings-dashboard.html), applies each change to openspec-sdd/findings-status-overlay.md,
     and appends a reconciliation to-do entry to openspec-sdd/mem-index-sync-todo.md so the change is not
     lost or fragmented - mem-index (08_Offene-Fragen.md / 13_Offene-Konflikte.md / 05_Gap-Analyse.md)
-    remains the single source of truth and must still be updated there (manually, or via a Copilot-chat
-    request) following the log.md protocol in .github/copilot-instructions.md.
+    remains the single source of truth and must still be updated there (manually, or via an agent
+    chat request) following the log.md protocol in AGENTS.md.
 
     The consumed pending-status-changes.json is archived (moved, not deleted) so re-running this script
     does not double-apply the same changes.
@@ -138,7 +138,7 @@ if ($applied.Count -gt 0) {
             '> Diese Datei listet Status-Aenderungen, die ueber das Findings-Dashboard vorgenommen wurden und noch'
             '> manuell (oder per Copilot-Chat-Anfrage, z.B. "gleiche mem-index-sync-todo.md mit dem Memory-Index ab")'
             '> in die mem-index SSOT (08_Offene-Fragen.md / 13_Offene-Konflikte.md / 05_Gap-Analyse.md) uebertragen'
-            '> werden sollten, inkl. log.md-Eintrag gemaess .github/copilot-instructions.md.'
+            '> werden sollten, inkl. log.md-Eintrag gemaess AGENTS.md.'
             '>'
             '> Diese Datei ist KEINE Single Source of Truth, nur eine Erinnerungsliste. Nach Abgleich Zeile abhaken.'
         )

@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
     Interactive bootstrap wizard for a new consulting-mandate workspace: memory index,
-    Copilot slash-agents, drop-in PowerShell tooling, and (optionally) an OpenSpec
-    requirements-engineering workspace.
+    agent instructions + skills (GitHub Copilot and OpenAI Codex), drop-in PowerShell
+    tooling, and (optionally) an OpenSpec requirements-engineering workspace.
 
 .DESCRIPTION
     Run this script once, from the root of a freshly cloned copy of this toolkit repo
@@ -12,7 +12,9 @@
     `.toolkit/`:
 
       mem-index/                     memory-index skeleton (00_INDEX, 01-08, 14, 15, log)
-      .github/copilot-instructions.md + .github/prompts/*.prompt.md (phase-dependent)
+      AGENTS.md + .agents/skills/*/SKILL.md (phase-dependent) - shared project instructions
+                                      and reusable skills, natively read by both GitHub
+                                      Copilot (VS Code) and OpenAI Codex
       client-meetings/, export-artefacts/, input_client-docs/
       *.ps1                          drop-in tooling, copied to the project root
       openspec-sdd/                  only if the Requirements-Engineering phase is chosen
@@ -115,6 +117,32 @@ function Copy-TemplateFile {
     New-ScaffoldFile -Path $DestPath -Content (Expand-Tokens -Text $content -Tokens $Tokens)
 }
 
+function Copy-TemplateSkill {
+    # Copies a whole .agents/skills/<name>/ folder (SKILL.md + any scripts/references/assets).
+    # Only *.md is token-expanded; any other file (future scripts/assets) is copied verbatim.
+    param([string]$SkillName, [string]$TplDir, [string]$DestRoot, [hashtable]$Tokens)
+    $srcDir  = Join-Path $TplDir "agents/skills/$SkillName"
+    $destDir = Join-Path $DestRoot ".agents/skills/$SkillName"
+    Get-ChildItem -LiteralPath $srcDir -Recurse -File | ForEach-Object {
+        $relPath = $_.FullName.Substring($srcDir.Length + 1)
+        $dest    = Join-Path $destDir $relPath
+        if ($_.Extension -eq '.md') {
+            Copy-TemplateFile -TemplatePath $_.FullName -DestPath $dest -Tokens $Tokens
+        } else {
+            if ((Test-Path -LiteralPath $dest) -and -not $Force) {
+                Write-Host "  skip (exists): $dest" -ForegroundColor DarkGray
+                $script:skipped++
+            } elseif ($PSCmdlet.ShouldProcess($dest, 'Create/overwrite file')) {
+                $destParent = Split-Path -Parent $dest
+                if ($destParent -and -not (Test-Path -LiteralPath $destParent)) { New-Item -ItemType Directory -Path $destParent -Force | Out-Null }
+                Copy-Item -LiteralPath $_.FullName -Destination $dest -Force
+                Write-Host "  created: $dest" -ForegroundColor Green
+                $script:created++
+            }
+        }
+    }
+}
+
 function Read-YesNo {
     param([string]$Prompt, [bool]$DefaultYes = $true)
     $hint = if ($DefaultYes) { 'J/n' } else { 'j/N' }
@@ -191,7 +219,7 @@ if ($clientFolder) {
 
 $seedFromClient = $false
 if ($clientFolderValid) {
-    $seedFromClient = Read-YesNo 'Nach dem Bootstrap sofort per Copilot-Prompt aus dem Client-Input befuellen (empfohlen)?' $true
+    $seedFromClient = Read-YesNo 'Nach dem Bootstrap sofort per Skill-Aufruf aus dem Client-Input befuellen (empfohlen)?' $true
 }
 
 Write-Host ''
@@ -259,23 +287,23 @@ GitHub Copilot rechnet in Credits: **1 Credit = $0.01 USD**. Sind Credits bekann
 }
 
 # ==========================================================================
-#  Step 2 - install prompts + copilot-instructions.md
+#  Step 2 - install skills + AGENTS.md
 # ==========================================================================
 
 Write-Host ''
-Write-Host '--- Schritt 1/9: Copilot-Instructions und Slash-Agents ---' -ForegroundColor Cyan
+Write-Host '--- Schritt 1/9: Agent-Instructions (AGENTS.md) und Skills ---' -ForegroundColor Cyan
 
-Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'github/copilot-instructions.md.tmpl') -DestPath (Join-Path $root '.github/copilot-instructions.md') -Tokens $tokens
+Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'agents/AGENTS.md.tmpl') -DestPath (Join-Path $root 'AGENTS.md') -Tokens $tokens
 
-$alwaysOnPrompts = @('bootstrap-mandate.prompt.md', 'retrospektive.prompt.md', 'slidev-praesentation.prompt.md', 'ingest-docs.prompt.md', 'pflege-master-schedule.prompt.md')
-$rePrompts       = @('analysis-boot-workstream.prompt.md', 'workstream-openspec-prozess.prompt.md')
+$alwaysOnSkills = @('bootstrap-mandate', 'retrospektive', 'slidev-praesentation', 'ingest-docs', 'pflege-master-schedule')
+$reSkills       = @('analysis-boot-workstream', 'workstream-openspec-prozess')
 
-foreach ($p in $alwaysOnPrompts) {
-    Copy-TemplateFile -TemplatePath (Join-Path $tplDir "github/prompts/$p") -DestPath (Join-Path $root ".github/prompts/$p") -Tokens $tokens
+foreach ($s in $alwaysOnSkills) {
+    Copy-TemplateSkill -SkillName $s -TplDir $tplDir -DestRoot $root -Tokens $tokens
 }
 if ($doRequirementsEngineering) {
-    foreach ($p in $rePrompts) {
-        Copy-TemplateFile -TemplatePath (Join-Path $tplDir "github/prompts/$p") -DestPath (Join-Path $root ".github/prompts/$p") -Tokens $tokens
+    foreach ($s in $reSkills) {
+        Copy-TemplateSkill -SkillName $s -TplDir $tplDir -DestRoot $root -Tokens $tokens
     }
 }
 
@@ -464,7 +492,7 @@ if ($doRequirementsEngineering -and $openSpecInitPossible) {
     } elseif ($PSCmdlet.ShouldProcess($openSpecTarget, 'openspec init')) {
         & (Join-Path $root 'install-openspec-sdd.ps1') -InstallPath $openSpecTarget -Tools 'github-copilot' -Language 'de' -SkipGitIgnore
     }
-    # Ship the generic 10-step process guide referenced by /workstream-openspec-prozess.
+    # Ship the generic 10-step process guide referenced by the workstream-openspec-prozess skill.
     New-ScaffoldDir -Path (Join-Path $root 'analyse-sprint/_openspec-fortschritt')
     Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'analyse-sprint/openspec-prozess-leitfaden.md') -DestPath (Join-Path $root 'analyse-sprint/openspec-prozess-leitfaden.md') -Tokens $tokens
 } elseif ($doRequirementsEngineering) {
@@ -549,7 +577,7 @@ Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'project-README.md.tmpl') -De
 Write-Host ''
 Write-Host "=== Fertig: $script:created Datei(en)/Ordner erstellt, $script:skipped uebersprungen ===" -ForegroundColor Cyan
 if ($clientFolderValid -and $seedFromClient) {
-    Write-Host 'Naechster Schritt: im Copilot Chat den Prompt /bootstrap-mandate ausfuehren, um den Memory-Index zu befuellen.' -ForegroundColor Cyan
+    Write-Host 'Naechster Schritt: die Skill bootstrap-mandate ausfuehren (Copilot: /bootstrap-mandate, Codex: $bootstrap-mandate), um den Memory-Index zu befuellen.' -ForegroundColor Cyan
 }
 Write-Host 'Oeffne README.md fuer die Kurzanleitung zum KI-basierten Projekt-Assistenten.' -ForegroundColor Cyan
 

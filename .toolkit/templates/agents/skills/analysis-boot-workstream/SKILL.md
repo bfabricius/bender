@@ -1,5 +1,4 @@
 ---
-mode: agent
 name: analysis-boot-workstream
 description: Erarbeitet fuer einen Analyse-Sprint-Workstream die fachlichen Grundlagen und das Vorgehen und gibt sie als zwei Markdown-Dateien aus (Grundlagen + Workstream-Vorgehen).
 argument-hint: Name des Workstreams (z. B. "Identity und Zugriffsmodell")

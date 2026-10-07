@@ -1,5 +1,4 @@
 ---
-mode: agent
 name: pflege-master-schedule
 description: Pflegt den Master-Schedule (mem-index/09_Master-Schedule.json) konversationell - Projekt-Rahmendaten, Meilensteine, Arbeitsstroeme und Arbeitspakete anlegen/aendern/entfernen, unabhaengig vom Web-Editor. Schreibt erst nach expliziter Bestaetigung.
 argument-hint: Kurzbeschreibung der gewuenschten Aenderung (optional, z. B. "neues Arbeitspaket in Lane L2")
@@ -8,7 +7,7 @@ argument-hint: Kurzbeschreibung der gewuenschten Aenderung (optional, z. B. "neu
 # pflege-master-schedule
 
 Du pflegst mit dem Nutzer gemeinsam den **Master-Schedule** direkt in
-[mem-index/09_Master-Schedule.json](../../mem-index/09_Master-Schedule.json) - unabhaengig vom
+[mem-index/09_Master-Schedule.json](../../../mem-index/09_Master-Schedule.json) - unabhaengig vom
 Web-Editor (`master-schedule-editor.html`). Beide Pfade schreiben in dieselbe Datei; du musst also
 nicht mit dem Web-Editor synchronisieren, nur konsistent mit ihrem Datenmodell bleiben.
 
@@ -37,9 +36,9 @@ Pflege-Pfade dieselbe Datei erzeugen):
 
 > Auto-generiert aus `09_Master-Schedule.json` (Single Source of Truth). Diese Datei nie von
 > Hand editieren - Aenderungen gehen beim naechsten Regenerieren verloren. Stattdessen:
-> `./schedule-wizard.ps1` (interaktiver Wizard), Copilot-Chat `/pflege-master-schedule`
-> (konversationell), oder `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1`
-> (Web-Editor).
+> `./schedule-wizard.ps1` (interaktiver Wizard), Skill `pflege-master-schedule`
+> (konversationell, Copilot: `/pflege-master-schedule`, Codex: `$pflege-master-schedule`), oder
+> `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1` (Web-Editor).
 
 ## Projekt-Rahmendaten
 
@@ -61,7 +60,7 @@ oder "_Noch keine Arbeitspakete in dieser Lane._"; falls gar keine Lanes: "_Noch
 Arbeitsstroeme erfasst._">
 
 ---
-_Zuletzt generiert: <JJJJ-MM-TT HH:mm> durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / /pflege-master-schedule._
+_Zuletzt generiert: <JJJJ-MM-TT HH:mm> durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / pflege-master-schedule._
 ```
 
 ## Grundprinzipien (immer einhalten)
@@ -80,7 +79,7 @@ _Zuletzt generiert: <JJJJ-MM-TT HH:mm> durch schedule-wizard.ps1 / apply-master-
   schreiben.
 - **Jede Aenderung wird geloggt.** Nach dem Schreiben von `09_Master-Schedule.json`/`.md` immer
   einen `update`-Eintrag an `mem-index/log.md` anhaengen (append-only, Format wie in
-  `.github/copilot-instructions.md` beschrieben, `**Geaenderte Nodes:** [[09_Master-Schedule]]`).
+  `AGENTS.md` beschrieben, `**Geaenderte Nodes:** [[09_Master-Schedule]]`).
 - **Stil.** Deutsch, ASCII-Umlaut-Stil (ae/oe/ue) wie im restlichen Repo.
 
 ## Schritt 0 - Intent bestimmen
@@ -130,7 +129,7 @@ Progress/Done, `effortPT` als nicht-negative Zahl).
 3. Einen `update`-Eintrag an `mem-index/log.md` anhaengen:
 
    ```markdown
-   ## [JJJJ-MM-TT] update | Master-Schedule ueber /pflege-master-schedule aktualisiert
+   ## [JJJJ-MM-TT] update | Master-Schedule ueber die Skill pflege-master-schedule aktualisiert
 
    **Aktion:** <ein Satz was gemacht wurde>
    **Geaenderte Nodes:** [[09_Master-Schedule]]

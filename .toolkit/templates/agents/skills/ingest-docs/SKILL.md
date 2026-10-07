@@ -1,5 +1,4 @@
 ---
-mode: agent
 name: ingest-docs
 description: Findet neue, noch nicht ingestete Client-Dokumente (oder nimmt vom Nutzer genannte Pfade entgegen), prueft ob Pre-Processing hilft, leitet das Node-Mapping ab und pflegt Nodes, 00_INDEX.md, _client-input-inventory.md und log.md nach expliziter Bestaetigung.
 argument-hint: Pfad(e) zu Datei(en)/Ordner (optional) - sonst werden nicht erfasste Client-Docs vorgeschlagen
@@ -8,7 +7,7 @@ argument-hint: Pfad(e) zu Datei(en)/Ordner (optional) - sonst werden nicht erfas
 # ingest-docs
 
 Du fuehrst den Nutzer durch den **Ingest** eines oder mehrerer neuer Client-Dokumente in den
-Memory-Index. Du bist der interaktive Vollzug des bereits in `.github/copilot-instructions.md`
+Memory-Index. Du bist der interaktive Vollzug des bereits in `AGENTS.md`
 definierten "Ingest workflow (neues Quelldokument)" - dieselben 7 Schritte, aber mit Kandidaten-
 Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gates dazwischen.
 
@@ -20,8 +19,8 @@ Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gat
   Schritt 3 (Pre-Processing/Tool-Install, falls noetig), Schritt 5 (Node-Mapping-Zusammenfassung),
   Schritt 7 (Commit-Text). Vor jedem Gate warten, bis der Nutzer explizit zustimmt.
   Node(s) aktualisieren/erstellen/committen erst NACH Schritt 5.
-- **Diese Prompt-Ausfuehrung ist selbst der sanktionierte Ausloeser** der "Ingest-Workflow"-
-  Ausnahme von der File-access restriction in `copilot-instructions.md` - Lesen von Rohdateien in
+- **Dieser Skill-Aufruf ist selbst der sanktionierte Ausloeser** der "Ingest-Workflow"-
+  Ausnahme von der File-access restriction in `AGENTS.md` - Lesen von Rohdateien in
   `input_client-docs/` ist hier ausdruecklich erlaubt.
 - **Ambiguitaet -> Frage stellen.** Wenn ein Dokument zu keiner Node eindeutig passt oder mehrere
   Nodes gleich gut passen, den Nutzer fragen statt zu raten.
@@ -58,7 +57,7 @@ Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gat
 ## Schritt 3 - Lesen & Pre-Processing-Analyse (Gate 2, nur falls Pre-Processing noetig)
 
 1. Versuche pro Datei zunaechst das direkte Lesen/Sichten (bestehende Konvention fuer PDF/DOCX
-   aus `bootstrap-mandate.prompt.md`).
+   aus der `bootstrap-mandate`-Skill).
 2. Empfehle Pre-Processing **nur bei klarem Grund**, z. B.:
    - Direktes Lesen liefert erkennbar binaeren/verstuemmelten Text (typisch bei DOCX/PPTX).
    - PDF liefert beim direkten Lesen keinen oder kaum extrahierbaren Text (moeglicherweise
@@ -84,7 +83,7 @@ Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gat
    - Ergeben sich neue offene Fragen -> Kandidaten fuer `08_Offene-Fragen.md` (Status 🔴🟠🟡).
    - Ergeben sich Widersprueche zu bestehendem Wissen -> Kandidaten fuer `13_Offene-Konflikte.md`.
    - Wuerde eine Ziel-Node dadurch ~400 Zeilen ueberschreiten -> Split vorschlagen (siehe
-     "Node splitten, wenn..." Regel in `copilot-instructions.md`).
+     "Node splitten, wenn..." Regel in `AGENTS.md`).
    - Passt der Inhalt zu keiner bestehenden Node -> neue Node vorschlagen (siehe
      "Neue Node hinzufuegen, wenn..." Regel).
 4. Bei Ambiguitaet: **nachfragen**, nicht selbst entscheiden.
@@ -108,7 +107,7 @@ Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gat
 4. Falls in Schritt 4 identifiziert: neue Zeilen/Abschnitte in `08_Offene-Fragen.md` bzw.
    `13_Offene-Konflikte.md` ergaenzen.
 5. Pro Quelldokument (oder gruppiert) einen `ingest`-Eintrag an `mem-index/log.md` anhaengen,
-   exakt im in `copilot-instructions.md` definierten Format:
+   exakt im in `AGENTS.md` definierten Format:
 
    ```markdown
    ## [YYYY-MM-DD] ingest | <Kurzbeschreibung>
@@ -123,7 +122,7 @@ Erkennung, Vollstaendigkeits-Check, Pre-Processing-Analyse und Bestaetigungs-Gat
 ## Schritt 7 - Commit anbieten (Gate 4)
 
 1. Schlage eine Commit-Message nach dem Muster `ingest: <kurze Beschreibung der Quelle(n)>` vor
-   (Konvention aus `copilot-instructions.md`).
+   (Konvention aus `AGENTS.md`).
 2. Nutzer kann den Text bestaetigen oder anpassen.
 3. Erst nach Bestaetigung: `git add` auf die geaenderten Node-/Index-/Log-Dateien, dann
    `git commit -m "<bestaetigte Message>"` lokal ausfuehren. **Niemals pushen.**

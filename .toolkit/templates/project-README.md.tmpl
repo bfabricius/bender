@@ -23,13 +23,15 @@ fuer den Umgang damit.
 
 Der Memory-Index liegt unter `mem-index/` und ist die **einzige Quelle der Wahrheit** fuer
 dieses Mandat. Alle Regeln dazu (Leseprotokoll, Node-Update/-Split/-Add, Ingest-Workflow,
-File-access restriction) stehen in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
+File-access restriction) stehen in [`AGENTS.md`](AGENTS.md) — gemeinsame Agent-Instructions
+fuer GitHub Copilot (VS Code) und OpenAI Codex.
 
 **Erster Schritt nach dem Bootstrap:** Wurde beim Bootstrap ein Client-Input-Ordner
-angegeben, im Copilot Chat `/bootstrap-mandate` ausfuehren — das befuellt die leeren
-`[PLATZHALTER]` in `mem-index/` und in `.github/copilot-instructions.md` aus dem Client-Input.
+angegeben, die Skill `bootstrap-mandate` ausfuehren (Copilot: `/bootstrap-mandate`, Codex:
+`$bootstrap-mandate`) — das befuellt die leeren `[PLATZHALTER]` in `mem-index/` und in
+`AGENTS.md` aus dem Client-Input.
 
-**Danach laufend:** Neue Client-Dokumente kommen nach `input_client-docs/`; Copilot ingested
+**Danach laufend:** Neue Client-Dokumente kommen nach `input_client-docs/`; der Agent ingested
 sie gemaess dem "Ingest workflow" in den Instructions (Node lesen -> aktualisieren -> Mapping
 in `00_INDEX.md` nachziehen -> offene Fragen ergaenzen -> `log.md`-Eintrag).
 
@@ -61,7 +63,7 @@ Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
 | Memory-Index als ZIP oder statische Website exportieren | `./export-mem-index.ps1` |
 | Einzelne Markdown-Datei(en)/Ordner als PDF exportieren | `./export-md-to-pdf.ps1` |
 | Memory-Index in ein GitLab-Wiki publizieren | `./publish-wiki.ps1 -WikiUrl <git-url>` |
-| Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Copilot-Chat: `/slidev-praesentation` |
+| Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Skill `slidev-praesentation` (Copilot: `/slidev-praesentation`, Codex: `$slidev-praesentation`) |
 
 Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
 aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
@@ -76,7 +78,8 @@ auto-generierte Zusammenfassung (nie von Hand editieren).
 
 Zwei unabhaengige Wege, um ihn zu pflegen:
 
-- **Konversationell:** im Copilot Chat `/pflege-master-schedule` ausfuehren - der Agent liest den
+- **Konversationell:** die Skill `pflege-master-schedule` ausfuehren (Copilot:
+  `/pflege-master-schedule`, Codex: `$pflege-master-schedule`) - der Agent liest den
   aktuellen Stand, erarbeitet Aenderungen mit dir und schreibt erst nach expliziter Bestaetigung.
 - **Interaktiver Wizard + Web-Editor:** `./schedule-wizard.ps1` fuer die Ersterfassung/laufende
   Pflege per Menue; `./build-master-schedule-editor.ps1` erzeugt `master-schedule-editor.html`
@@ -93,9 +96,10 @@ Stelle arbeiten, um Konflikte zu vermeiden (kein Locking vorgesehen).
 
 _Nur relevant, wenn die Requirements-Engineering-Phase gewaehlt wurde (`openspec-sdd/` vorhanden)._
 
-Fuer einen neuen Themenblock zuerst `/analysis-boot-workstream <Name>` im Copilot Chat
-ausfuehren — das erarbeitet die fachlichen Grundlagen und das Vorgehen als zwei Dateien in
-`analyse-sprint/`. Danach `/workstream-openspec-prozess <Name>` ausfuehren: dieser Agent
+Fuer einen neuen Themenblock zuerst die Skill `analysis-boot-workstream <Name>` ausfuehren
+(Copilot: `/analysis-boot-workstream`, Codex: `$analysis-boot-workstream`) — das erarbeitet
+die fachlichen Grundlagen und das Vorgehen als zwei Dateien in
+`analyse-sprint/`. Danach die Skill `workstream-openspec-prozess <Name>` ausfuehren: dieser
 begleitet Schritt fuer Schritt durch die ersten Schritte des Leitfadens
 ([`analyse-sprint/openspec-prozess-leitfaden.md`](analyse-sprint/openspec-prozess-leitfaden.md)) —
 Triage der offenen IDs, `proposal.md`, `design.md` (Fakten und Optionen), Evidenz sammeln
@@ -105,8 +109,8 @@ ueberfuehren, bevor irgendetwas als Anforderung festgeschrieben wird.
 
 ## 6. OpenSpec: Change-Proposals spezifizieren
 
-Sobald ein Entscheid vorliegt (Schritt 4 des Leitfadens), fuehrt derselbe Agent
-(`/workstream-openspec-prozess`) weiter durch `spec.md` (testbare Requirements), das
+Sobald ein Entscheid vorliegt (Schritt 4 des Leitfadens), fuehrt dieselbe Skill
+(`workstream-openspec-prozess`) weiter durch `spec.md` (testbare Requirements), das
 Readiness-Gate, `tasks.md` (Arbeitspakete) und die Umsetzung bis zur Abnahme/Baseline
 (`archive`). `validate --strict` prueft dabei nur die **Form**, nie die fachliche Richtigkeit
 — das bleibt Aufgabe von Success Lead/Architekt.
@@ -129,8 +133,8 @@ So bleibt in beide Richtungen nachvollziehbar, welches Ticket welchen OpenSpec-T
 
 ## 8. Retrospektiven
 
-Im Copilot Chat `/retrospektive [Task-Name]` ausfuehren. Der Agent fuehrt durch bestehende
-Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
+Im Copilot Chat `/retrospektive [Task-Name]` ausfuehren (Codex: `$retrospektive`). Der Agent
+fuehrt durch bestehende Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
 dir priorisierte Action Items ab. Alles landet in
 [`mem-index/15_Retrospektiven-und-Action-Items.md`](mem-index/15_Retrospektiven-und-Action-Items.md)
 (append-only: `R-XX` Retro-Eintraege, `AI-XX` Action Items).
@@ -157,7 +161,8 @@ __TOOLLIST__
 | `build-master-schedule-editor.ps1` | Interaktiven Master-Schedule-Web-Editor (`master-schedule-editor.html`) aus dem Memory-Index bauen |
 | `apply-master-schedule-changes.ps1` | Im Web-Editor gesammelte Master-Schedule-Aenderungen (nach Bestaetigung + Diff-Anzeige) in den Index uebernehmen |
 
-> Zusaetzlich zu den Skripten: Copilot-Chat-Slash-Agent `/pflege-master-schedule` fuer die
+> Zusaetzlich zu den Skripten: Skill `pflege-master-schedule` (Copilot:
+> `/pflege-master-schedule`, Codex: `$pflege-master-schedule`) fuer die
 > konversationelle Pflege des Master-Schedules, unabhaengig vom Web-Editor (siehe Abschnitt 4).
 
 > `build-findings-dashboard.ps1` erwartet F-/G- als Markdown-**Tabellenzeilen** (`| F-01 | ... |`) in

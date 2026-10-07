@@ -36,7 +36,7 @@
 
 .PARAMETER Action
     Optional. Fuehrt genau einen Menuepunkt nicht-interaktiv aus und beendet danach, statt das
-    Menue zu zeigen (fuer Skript-/Agent-Aufrufe, z. B. durch den /ingest-docs Slash-Agent). Default:
+    Menue zu zeigen (fuer Skript-/Agent-Aufrufe, z. B. durch die ingest-docs Skill). Default:
     "Menu" (bisheriges interaktives Verhalten, unveraendert).
 
 .EXAMPLE
@@ -382,9 +382,9 @@ function Get-IngestHistory {
 function Get-IngestCoverage {
     param([string]$MemIndexPath, [string]$InputDocsPath)
     $mapping = @(Get-QuelldokumentMapping -MemIndexPath $MemIndexPath | Where-Object { -not $_.IsDerived })
-    # Retro-Eintraege (Slash-Agent /retrospektive) tragen ihre Quelle bewusst NICHT in die
+    # Retro-Eintraege (Skill retrospektive) tragen ihre Quelle bewusst NICHT in die
     # Quelldokument-Mapping-Tabelle von 00_INDEX.md ein (Node 15 ist von dieser Regel
-    # ausgenommen, siehe copilot-instructions.md), sondern nennen den Pfad als Backtick-
+    # ausgenommen, siehe AGENTS.md), sondern nennen den Pfad als Backtick-
     # Referenz direkt im log.md-Eintrag (Aktion/Details). Ohne diese als "erfasst" zu
     # beruecksichtigen, wuerden Retro-Quelldateien immer faelschlich als Luecke auftauchen.
     $inputDocsLeaf = Split-Path -Path $InputDocsPath -Leaf
@@ -954,7 +954,7 @@ function Show-Menu {
     Write-Host ' 0) Beenden'
 }
 
-# Nicht-interaktiver Einzelaufruf (z. B. durch /ingest-docs): fuehrt genau einen Menuepunkt aus
+# Nicht-interaktiver Einzelaufruf (z. B. durch die ingest-docs Skill): fuehrt genau einen Menuepunkt aus
 # und beendet, ohne das interaktive Menue je zu zeigen.
 if ($Action -ne 'Menu') {
     switch ($Action) {

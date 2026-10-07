@@ -1,12 +1,12 @@
 ---
-mode: agent
+name: bootstrap-mandate
 description: Befüllt den leeren Memory-Index dieses Mandats aus dem Client-Input.
 ---
 
 # Bootstrap-Befüllung: __MANDATE__
 
 Du hast einen **leeren, skelettierten Memory-Index** unter `mem-index/` und eine
-generische `.github/copilot-instructions.md` mit `[PLATZHALTER]`-Feldern. Deine Aufgabe
+generische `AGENTS.md` mit `[PLATZHALTER]`-Feldern. Deine Aufgabe
 ist es, beides aus dem Client-Input zu befüllen.
 
 ## Schritt 1 — Client-Input verstehen
@@ -36,7 +36,7 @@ Punkte in `mem-index/08_Offene-Fragen.md` ein (mit Status 🔴🟠🟡).
 ## Schritt 4 — INDEX & Instructions finalisieren
 1. `mem-index/00_INDEX.md`: Quelldokument-Mapping (Node-Zuordnung) und Glossar vervollständigen.
 2. `mem-index/14_Glossar.md`: zentrale Begriffe/Abkürzungen aus dem Client-Input eintragen.
-3. `.github/copilot-instructions.md`: alle `[PLATZHALTER]` füllen — v. a.
+3. `AGENTS.md`: alle `[PLATZHALTER]` füllen — v. a.
    *Project context* (Auftraggeber, Mandatsziel, Sprache) und *Key Constraints*.
 
 ## Schritt 5 — Loggen

@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Optionales Pre-Processing-Tool: extrahiert Klartext aus DOCX/PPTX/PDF fuer den /ingest-docs Slash-Agent.
+    Optionales Pre-Processing-Tool: extrahiert Klartext aus DOCX/PPTX/PDF fuer die ingest-docs Skill.
 
 .DESCRIPTION
-    Wird typischerweise vom /ingest-docs Slash-Agent aufgerufen, wenn ein Dokument sich beim
+    Wird typischerweise von der ingest-docs Skill aufgerufen, wenn ein Dokument sich beim
     direkten Lesen als schwer auswertbar erweist (z. B. rohes DOCX/PPTX-Binaerformat oder ein PDF
     ohne direkt extrahierbaren Text). Schreibt pro Quelldatei eine .txt-Datei unter
     .ingest-tools/extracted/ (Pfad wird relativ zu InputDocsFolder gespiegelt, damit
