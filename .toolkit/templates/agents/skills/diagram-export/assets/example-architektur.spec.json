@@ -1,0 +1,62 @@
+{
+  "title": "Zielarchitektur Cloud-Infrastruktur",
+  "subtitle": "Schematisches Architekturdiagramm – Beispiel-Spec für build_drawio.py",
+  "note": "Netzwerktrennung über SDN-Subnetze. Pfeile zeigen den Fluss der Benutzerabfragen.",
+  "legend": [
+    {"style": "red", "label": "Security / Ingress"},
+    {"style": "blue", "label": "Öffentliches Netzsegment"},
+    {"style": "green", "label": "Compute"},
+    {"style": "purple", "label": "AI"},
+    {"style": "yellow", "label": "Daten"}
+  ],
+  "nodes": [
+    {"id": "net", "label": "Öffentliches Internet", "type": "cloud", "style": "gray", "x": 300, "y": 0, "w": 240, "h": 70},
+    {"id": "dc", "label": "Hosting-Partner-Cloud", "sub": "Standort Schweiz (CH)", "type": "boundary", "style": "dark",
+     "x": 0, "y": 130, "w": 840, "h": 770},
+
+    {"id": "ingress", "label": "Ingress & Security Layer", "style": "red", "parent": "dc", "x": 20, "y": 50, "w": 800,
+     "layout": {"cols": 2, "stretch": true, "header": 36, "padding": 40}},
+    {"id": "lb", "label": "Load Balancer", "sub": "Octavia HA", "parent": "ingress", "h": 44},
+    {"id": "waf", "label": "WAF", "sub": "TLS-Terminierung", "parent": "ingress", "h": 44},
+
+    {"id": "dmz", "label": "Public-DMZ-Subnetz", "style": "blue", "parent": "dc", "x": 20, "y": 220, "w": 390,
+     "layout": {"cols": 2, "stretch": true, "header": 36}},
+    {"id": "fe", "label": "Frontend", "sub": "Web-Reverse-Proxy", "parent": "dmz"},
+    {"id": "api", "label": "REST-API", "sub": "öffentlich", "parent": "dmz"},
+
+    {"id": "mgmt", "label": "Internes Management-Subnetz", "style": "dark", "parent": "dc", "x": 430, "y": 220, "w": 390,
+     "layout": {"cols": 2, "stretch": true, "header": 36}},
+    {"id": "adm1", "label": "Verwaltungsanbindung", "parent": "mgmt"},
+    {"id": "adm2", "label": "Administration", "sub": "abgesichert", "parent": "mgmt"},
+
+    {"id": "compute", "label": "Compute & Worker Layer", "sub": "Managed Kubernetes / Compute VMs", "style": "green",
+     "parent": "dc", "x": 20, "y": 400, "w": 800, "layout": {"cols": 4, "stretch": true, "header": 52}},
+    {"id": "c1", "label": "Management Layer", "sub": "Zentrales API-Backend", "parent": "compute", "h": 80},
+    {"id": "c2", "label": "Assistant Layer", "sub": "Retriever Orchestrator", "parent": "compute", "h": 80},
+    {"id": "c3", "label": "Data Retrievers", "sub": "CMS, Search Engine, DB-Connector", "parent": "compute", "h": 80},
+    {"id": "c4", "label": "Vector Search", "sub": "Microservices (In-Cluster)", "parent": "compute", "h": 80},
+
+    {"id": "ai", "label": "AI & Acceleration Layer", "style": "purple", "parent": "dc", "x": 20, "y": 610, "w": 390,
+     "layout": {"cols": 2, "stretch": true, "header": 36}},
+    {"id": "gpu", "label": "GPU Node", "sub": "NVIDIA L4 (24 GB)\nDocling: Parsing, OCR", "parent": "ai", "h": 72},
+    {"id": "llm", "label": "Sovereign LLM API", "sub": "Pay-per-Token", "parent": "ai", "h": 72},
+
+    {"id": "data", "label": "Persistence & Data Layer", "style": "yellow", "parent": "dc", "x": 430, "y": 610, "w": 390,
+     "layout": {"cols": 3, "stretch": true, "header": 36, "gap": 12, "padding": 16}},
+    {"id": "pg", "label": "PostgreSQL", "sub": "Managed, HA", "parent": "data", "h": 72},
+    {"id": "s3", "label": "S3 Object Storage", "sub": "1'000 GB, Ceph", "parent": "data", "h": 72},
+    {"id": "blk", "label": "Block Storage", "sub": "Cinder", "parent": "data", "h": 72},
+
+    {"id": "verw", "label": "Verwaltung", "sub": "internes Netz", "type": "external", "style": "gray", "x": 910, "y": 368, "w": 130, "h": 80}
+  ],
+  "edges": [
+    {"from": "net", "to": "ingress", "label": "Web-Traffic", "exit": [0.5, 1], "entry": [0.5, 0]},
+    {"from": "ingress", "to": "dmz", "label": "öffentlich", "exit": [0.244, 1], "entry": [0.5, 0]},
+    {"from": "ingress", "to": "mgmt", "label": "intern", "exit": [0.756, 1], "entry": [0.5, 0]},
+    {"from": "dmz", "to": "compute", "exit": [0.5, 1], "entry": [0.244, 0]},
+    {"from": "mgmt", "to": "compute", "exit": [0.5, 1], "entry": [0.756, 0]},
+    {"from": "compute", "to": "ai", "label": "Parsing & LLM", "exit": [0.244, 1], "entry": [0.5, 0]},
+    {"from": "compute", "to": "data", "label": "Lesen / Schreiben", "exit": [0.756, 1], "entry": [0.5, 0]},
+    {"from": "mgmt", "to": "verw", "label": "IPSec-VPN", "dashed": true, "bidirectional": true, "color": "#666666", "exit": [1, 0.5], "entry": [0, 0.5]}
+  ]
+}

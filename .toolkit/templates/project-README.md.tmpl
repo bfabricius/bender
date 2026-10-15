@@ -64,9 +64,18 @@ Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
 | Einzelne Markdown-Datei(en)/Ordner als PDF exportieren | `./export-md-to-pdf.ps1` |
 | Memory-Index in ein GitLab-Wiki publizieren | `./publish-wiki.ps1 -WikiUrl <git-url>` |
 | Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Skill `slidev-praesentation` (Copilot: `/slidev-praesentation`, Codex: `$slidev-praesentation`) |
+| draw.io-Diagramm aus Bild/Mermaid/ASCII/Text erzeugen | Skill `diagram-export` (Copilot: `/diagram-export`, Codex: `$diagram-export`) |
+| E-Mail-Entwurf an Projekt-Stakeholder erstellen | Skill `email-entwurf` (Copilot: `/email-entwurf`, Codex: `$email-entwurf`) |
+| Template (`.md`/`.docx`) aus dem Memory-Index befuellen | Skill `fill-template` (Copilot: `/fill-template`, Codex: `$fill-template`) |
 
 Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
 aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
+
+> [!NOTE]
+> `fill-template` benoetigt das Python-Paket `python-docx` fuer `.docx`-Templates (siehe
+> `requirements.txt` im Projekt-Root: `pip install -r requirements.txt`). `diagram-export`
+> braucht dafuer keine Pakete; dessen optionaler PNG/SVG-Export benoetigt zusaetzlich die
+> draw.io-Desktop-CLI (separat installieren, kein Python-Paket).
 
 ## 4. Master-Schedule: Planung & Lieferansicht
 

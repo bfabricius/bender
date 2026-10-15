@@ -295,7 +295,7 @@ Write-Host '--- Schritt 1/9: Agent-Instructions (AGENTS.md) und Skills ---' -For
 
 Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'agents/AGENTS.md.tmpl') -DestPath (Join-Path $root 'AGENTS.md') -Tokens $tokens
 
-$alwaysOnSkills = @('bootstrap-mandate', 'retrospektive', 'slidev-praesentation', 'ingest-docs', 'pflege-master-schedule')
+$alwaysOnSkills = @('bootstrap-mandate', 'retrospektive', 'slidev-praesentation', 'ingest-docs', 'pflege-master-schedule', 'diagram-export', 'email-entwurf', 'fill-template')
 $reSkills       = @('analysis-boot-workstream', 'workstream-openspec-prozess')
 
 foreach ($s in $alwaysOnSkills) {
@@ -477,6 +477,14 @@ function Install-Script {
 
 foreach ($s in $alwaysOnScripts) { Install-Script -Name $s }
 if ($doRequirementsEngineering) { foreach ($s in $reScripts) { Install-Script -Name $s } }
+
+$requirementsPath = Join-Path $root 'requirements.txt'
+if (-not (Test-Path -LiteralPath $requirementsPath)) {
+    Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'requirements.txt.tmpl') -DestPath $requirementsPath -Tokens $tokens
+} else {
+    Write-Host "  skip (exists): $requirementsPath" -ForegroundColor DarkGray
+    $script:skipped++
+}
 
 # ==========================================================================
 #  Step 8 - OpenSpec init (Requirements-Engineering phase only)
