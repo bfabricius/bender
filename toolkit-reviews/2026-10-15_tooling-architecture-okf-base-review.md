@@ -19,7 +19,8 @@ Not checked: which PS scripts depend on Windows-only APIs (e.g. Office COM). Too
 |---|---|
 | Runtime | Assume Python. If the user rejects it, agree on an alternative runtime with the user. |
 | Platforms | Priority 1 Windows, 2 Linux, 3 macOS. Not all needed immediately. |
-| Users | Mainly technical. Skills must be able to use the same CLI tools. |
+| Users | Many project actor roles: sales/acquisition managers, executives, project leads, POs, QA, non-software engineering roles, stakeholders from varied backgrounds. Supporting these non-technical roles is a paramount requirement. |
+| CLI vs skills | CLI users are assumed to be the more technical ones. Skills are the main interface for everyone else. How to maximise ease of use for the non-technical roles is not yet decided. |
 | mem-index | Key knowledge DB of every project. Collaborative via git. |
 | Exports | Transient snapshots (wiki, flat files, PDF). Never written back to the project. |
 | Privacy | Decided per project and per client. |
@@ -53,6 +54,17 @@ This is the strongest current pattern for reliable agent tooling. Interactive PS
 - **Doc conversion.** Evaluate local tools (e.g. MarkItDown, Docling) in place of any Windows-only conversion.
 
 **Not first:** an MCP server. For local scripts, CLI plus skill costs less context. Add MCP only for harnesses without shell access.
+
+### Implications of the non-technical user requirement
+
+The CLI serves technical users directly. For everyone else it is an implementation detail that skills call. This changes the priorities above:
+
+- **Skills are the primary product surface for most roles.** Judge each skill by whether a non-technical person can complete a task in conversation, without knowing the CLI, git or file layout. The "Skills call the same commands" recommendation is therefore the central one, not a convenience.
+- **Setup must be invisible to them.** Python/runtime checks, `bender doctor` and dependency installs should be run and explained by the skill, in plain language. A non-technical user should never have to debug a runtime problem; the "ask the user which runtime to use" fallback needs a guided, jargon-free flow.
+- **Role-oriented skills.** Group skills by what a role wants to do (e.g. a sales manager preparing an offer, an executive getting a status summary, QA checking open questions) rather than by technical operation. Roles also differ in which nodes they should see or edit, which links to the sensitivity policy in section 3.
+- **Safe-by-default writes.** Two-stage plan/apply writes matter more here, because non-technical users cannot easily review or repair a bad edit. Skills should show a plain-language summary of the change before applying it.
+- **Reading and contributing paths differ.** Many roles will mostly read, and the transient exports (wiki, PDF, flat files) are likely their main read interface. Contributing via git is probably unrealistic for them, so skills need to mediate contributions (e.g. propose a change, a technical user or a review step merges it). How this should work is open.
+- **Guardrails over expertise.** `lint`, generated indexes and read-only export stamps protect the mem-index from changes by users who cannot judge the structure themselves.
 
 ## 2. OKF (Open Knowledge Format)
 
@@ -94,7 +106,8 @@ Today this is only a convention.
 
 ## 4. Suggested order
 
-1. CLI contract, launcher and `doctor`.
+0. Identify the target roles and their top tasks, and decide how non-technical roles will interact with bender. This is the main unknown, and it shapes every step below.
+1. CLI contract, launcher and `doctor` (with skill-driven, plain-language setup).
 2. Node frontmatter, `bender lint`, `bender log add`, generated index.
 3. Port agent-facing PS tools to Python, keeping PS shims.
 4. Plan/apply writes and read-only stamps on exports.
@@ -109,9 +122,13 @@ Today this is only a convention.
 - Frontmatter schema: which `type` values and custom keys fit a mandate mem-index?
 - Keep `[[wikilinks]]` and the log format, or accept OKF-style changes for compatibility?
 - Which PS scripts are worth keeping as PS-only (wizards) versus porting?
-- Which harnesses (Copilot, Codex, others) must be supported, and what permission/hook controls do they offer?
+- Which harnesses (Copilot, Codex, others) must be supported, and what permission/hook controls do they offer? Do the non-technical roles even have access to a coding-agent harness today, or do they need a different front end (e.g. a chat tool reading exports)?
+- Which roles come first, and what are their top 2-3 tasks? This should drive which skills get built and tested first.
+- How should non-technical roles contribute to the mem-index (git, skill-mediated proposals, review by a technical owner)?
+- Which roles may read or edit which nodes (feeds the per-project sensitivity policy)?
 
 ## Next possible steps
 
 - Sketch the CLI contract (verbs, flags, exit codes, JSON shapes).
 - Draft the node frontmatter schema and a `lint` ruleset.
+- Map project roles to tasks and skills, to find where non-technical users are served worst today.
