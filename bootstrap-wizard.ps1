@@ -295,7 +295,7 @@ Write-Host '--- Schritt 1/9: Agent-Instructions (AGENTS.md) und Skills ---' -For
 
 Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'agents/AGENTS.md.tmpl') -DestPath (Join-Path $root 'AGENTS.md') -Tokens $tokens
 
-$alwaysOnSkills = @('bootstrap-mandate', 'retrospektive', 'slidev-praesentation', 'ingest-docs', 'pflege-master-schedule', 'diagram-export', 'email-entwurf', 'fill-template')
+$alwaysOnSkills = @('bootstrap-mandate', 'retrospektive', 'slidev-praesentation', 'ingest-docs', 'pflege-master-schedule', 'diagram-export', 'email-entwurf', 'fill-template', 'create-template')
 $reSkills       = @('analysis-boot-workstream', 'workstream-openspec-prozess')
 
 foreach ($s in $alwaysOnSkills) {

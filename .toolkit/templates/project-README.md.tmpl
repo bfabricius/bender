@@ -67,6 +67,7 @@ Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
 | draw.io-Diagramm aus Bild/Mermaid/ASCII/Text erzeugen | Skill `diagram-export` (Copilot: `/diagram-export`, Codex: `$diagram-export`) |
 | E-Mail-Entwurf an Projekt-Stakeholder erstellen | Skill `email-entwurf` (Copilot: `/email-entwurf`, Codex: `$email-entwurf`) |
 | Template (`.md`/`.docx`) aus dem Memory-Index befuellen | Skill `fill-template` (Copilot: `/fill-template`, Codex: `$fill-template`) |
+| Template (`.md`/`.docx`) aus einem bestehenden Dokument bauen (anonymisiert, fuer `fill-template`) | Skill `create-template` (Copilot: `/create-template`, Codex: `$create-template`) |
 
 Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
 aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
