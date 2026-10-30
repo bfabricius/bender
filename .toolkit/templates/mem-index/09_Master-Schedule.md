@@ -2,9 +2,9 @@
 
 > Auto-generiert aus `09_Master-Schedule.json` (Single Source of Truth). Diese Datei nie von Hand
 > editieren – Aenderungen gehen beim naechsten Regenerieren verloren. Stattdessen:
-> `./schedule-wizard.ps1` (interaktiver Wizard), Copilot-Chat `/pflege-master-schedule`
-> (konversationell), oder `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1`
-> (Web-Editor).
+> `./schedule-wizard.ps1` (interaktiver Wizard), Skill `pflege-master-schedule`
+> (konversationell, Copilot: `/pflege-master-schedule`, Codex: `$pflege-master-schedule`), oder
+> `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1` (Web-Editor).
 
 ## Projekt-Rahmendaten
 

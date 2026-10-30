@@ -20,11 +20,16 @@ nicht mit dem Web-Editor synchronisieren, nur konsistent mit ihrem Datenmodell b
   von Lanes (Etappen/lieferbare Meilensteine, wirken als Marker ueber die gesamte Zeitachse).
 - `lanes[]`: `{ id, name, owner, workPackages[] }` - IDs `L1`, `L2`, ... . Owner ist ausschliesslich
   pro Lane erfasst (nicht pro Arbeitspaket).
-- `workPackages[]` (pro Lane): `{ id, name, startDate, endDate, priority, effortPT, status }` - IDs
+- `workPackages[]` (pro Lane): `{ id, name, startDate, endDate, priority, effortPT, status,
+  description?, refId?, refName? }` - IDs
   `WP1`, `WP2`, ... **fortlaufend ueber den GESAMTEN Schedule** (nicht pro Lane neu bei 1 beginnend).
   - `priority` (MoSCoW): exakt `Must` / `Should` / `Could` / `Won't`.
   - `effortPT`: Aufwand in Personentagen (Zahl, >= 0).
   - `status`: exakt `To Do` / `In Progress` / `Done`.
+  - `description` (optional): Freitext-Beschreibung des Arbeitspakets.
+  - `refId` / `refName` (optional): generische Referenz, z. B. Ausschreibungskriterium, Ticket oder
+    Requirement-ID samt Bezeichnung. Aeltere Schedules (< Toolkit 0.7.0) nutzen dafuer `soId` /
+    `soName` - beim Schreiben immer auf `refId` / `refName` umstellen.
 
 `09_Master-Schedule.md` ist eine rein **auto-generierte** Zusammenfassung (nie von Hand editieren) -
 du regenerierst sie nach jeder Aenderung nach exakt dieser Struktur (Ueberschriften/Reihenfolge
@@ -55,7 +60,8 @@ Meilensteine erfasst._" falls leer>
 ## Arbeitsstroeme (Lanes)
 
 <pro Lane ein Abschnitt "### L1 - <Name> (Owner: <Owner>)" mit Tabelle
-"| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status |" sortiert nach Start,
+"| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status | Ref-ID | Referenz | Beschreibung |"
+sortiert nach Start (leere optionale Felder als leere Zelle),
 oder "_Noch keine Arbeitspakete in dieser Lane._"; falls gar keine Lanes: "_Noch keine
 Arbeitsstroeme erfasst._">
 
@@ -142,3 +148,12 @@ Progress/Done, `effortPT` als nicht-negative Zahl).
 
 Fasse kurz zusammen, was geschrieben wurde (neue/geaenderte/entfernte IDs) und bestaetige, dass
 `log.md` ergaenzt wurde.
+
+## Schritt 6 - Web-Editor-Rebuild anbieten
+
+`master-schedule-editor.html` ist eine **statische, einmalig generierte Momentaufnahme** von
+`09_Master-Schedule.json` (gebaut von `./build-master-schedule-editor.ps1`) - sie aktualisiert sich
+nie von selbst. Nach jeder Schreibaktion in Schritt 4 deshalb direkt im Anschluss an Schritt 5
+fragen: "Soll ich `master-schedule-editor.html` jetzt neu bauen, damit er den aktuellen Stand
+zeigt?" Bei Zustimmung `./build-master-schedule-editor.ps1` im Projekt-Root ausfuehren und das
+Ergebnis (Erfolg + Pfad) kurz bestaetigen. Bei Ablehnung nichts tun.

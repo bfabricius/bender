@@ -45,7 +45,7 @@ $OutPath = Join-Path $ProjectRoot 'master-schedule-editor.html'
 $CacheDir = Join-Path $ProjectRoot '.schedule-export'
 
 if (-not (Test-Path -LiteralPath $JsonPath)) {
-    throw "Kein Master-Schedule gefunden: $JsonPath. Zuerst ./schedule-wizard.ps1 ausfuehren (oder Copilot-Chat: /pflege-master-schedule)."
+    throw "Kein Master-Schedule gefunden: $JsonPath. Zuerst ./schedule-wizard.ps1 ausfuehren (oder Skill pflege-master-schedule: Copilot /pflege-master-schedule, Codex `$pflege-master-schedule)."
 }
 
 function Get-MandateName {
@@ -133,18 +133,20 @@ $htmlTemplate = @'
   .chart-header { position: relative; height: 26px; border-bottom: 1px solid #ccc; background: #f4f7fb; }
   .tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid #e2e6ec; font-size: 0.68rem;
     color: #667; padding-left: 3px; white-space: nowrap; }
-  .lane-row { position: relative; height: 40px; border-bottom: 1px solid #eee; }
+  .lane-row { position: relative; min-height: 40px; border-bottom: 1px solid #eee; }
   .lane-row:nth-child(even) { background: #fbfcfe; }
   .lane-label { position: sticky; left: 0; z-index: 3; display: inline-block; background: inherit; }
   .wp-bar { position: absolute; top: 6px; height: 26px; border-radius: 4px; font-size: 0.72rem; color: #fff;
-    overflow: hidden; white-space: nowrap; padding: 4px 6px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
-  .milestone-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #9333ea; z-index: 2; }
-  .milestone-label { position: absolute; top: -20px; font-size: 0.68rem; color: #9333ea; white-space: nowrap;
-    transform: translateX(-50%); }
+    overflow: hidden; white-space: nowrap; padding: 4px 6px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.25);
+    border: 1px solid #000; }
+  .milestone-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #9333ea; z-index: 2; cursor: pointer; }
+  .milestone-row { position: relative; height: 20px; border-bottom: 1px solid #eee; background: #faf5ff; }
+  .milestone-label { position: absolute; top: 2px; font-size: 0.7rem; font-weight: 600; color: #9333ea; white-space: nowrap;
+    transform: translateX(-50%); cursor: pointer; }
   .today-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid #2563eb; z-index: 4; }
-  .progress-marker { position: absolute; top: 3px; width: 0; height: 34px; border-left: 3px solid #dc2626; z-index: 5; }
+  .progress-marker { position: absolute; top: 0; bottom: 0; width: 0; border-left: 3px solid #dc2626; z-index: 5; }
   #lane-names { position: relative; }
-  .lane-name-cell { height: 40px; display: flex; flex-direction: column; justify-content: center;
+  .lane-name-cell { min-height: 40px; display: flex; flex-direction: column; justify-content: center;
     padding: 0 0.5rem; border-bottom: 1px solid #eee; font-size: 0.78rem; }
   .lane-name-cell b { font-size: 0.82rem; }
   .chart-flex { display: flex; }
@@ -159,10 +161,11 @@ $htmlTemplate = @'
   #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center;
     justify-content: center; z-index: 50; }
   #modal-box { background: #fff; border-radius: 8px; padding: 1rem 1.2rem; min-width: 320px; max-width: 90vw;
-    max-height: 85vh; overflow: auto; }
+    max-height: calc(100vh - 2.5rem); overflow: auto; }
   #modal-box h3 { margin-top: 0; }
   #modal-box label { display: block; font-size: 0.82rem; margin: 0.5rem 0 0.15rem; }
   #modal-box input, #modal-box select, #modal-box textarea { width: 100%; padding: 0.3rem 0.4rem; }
+  #modal-box textarea { resize: none; overflow-y: hidden; }
   #modal-actions { margin-top: 0.9rem; display: flex; gap: 0.5rem; justify-content: flex-end; }
   details.instructions { background: #f4f7fb; border: 1px solid #cdd8e6; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.8rem; }
   details.instructions summary { cursor: pointer; font-weight: 600; }
@@ -278,10 +281,32 @@ var PRIORITY_OPTIONS = ['Must', 'Should', 'Could', "Won't"];
 var STATUS_OPTIONS = ['To Do', 'In Progress', 'Done'];
 var STATUS_COLORS = { 'To Do': '#9ca3af', 'In Progress': '#f59e0b', 'Done': '#22c55e' };
 var PX_PER_DAY = 9;
+var MIN_PX_PER_DAY = 4;
 
 var state = { schedule: null, filter: { laneIds: null, fromDate: '', toDate: '' } };
 
-function cloneSchedule(s) { return JSON.parse(JSON.stringify(s)); }
+// Wenn Von UND Bis gesetzt sind, auf die verfuegbare Breite von #chart-scroll zoomen (kein
+// horizontales Scrollen mehr fuer die gewaehlte Spanne); sonst der feste Tageswert.
+function computePxPerDay(totalDays) {
+  if (!state.filter.fromDate || !state.filter.toDate) return PX_PER_DAY;
+  var scrollEl = document.getElementById('chart-scroll');
+  var namesWidth = document.getElementById('lane-names').offsetWidth || 180;
+  var available = scrollEl.clientWidth - namesWidth - 2;
+  if (available <= 0) return PX_PER_DAY;
+  return Math.max(MIN_PX_PER_DAY, available / totalDays);
+}
+
+function cloneSchedule(s) { return migrateLegacyFields(JSON.parse(JSON.stringify(s))); }
+// Arbeitspaket-Felder soId/soName (< 0.7.0) auf die generischen refId/refName abbilden.
+function migrateLegacyFields(s) {
+  (s.lanes || []).forEach(function (lane) {
+    (lane.workPackages || []).forEach(function (wp) {
+      if (wp.soId !== undefined) { if (!wp.refId) { wp.refId = wp.soId; } delete wp.soId; }
+      if (wp.soName !== undefined) { if (!wp.refName) { wp.refName = wp.soName; } delete wp.soName; }
+    });
+  });
+  return s;
+}
 
 // ---- date helpers (UTC to avoid timezone drift on plain yyyy-MM-dd dates) ----
 function parseISO(s) {
@@ -382,11 +407,32 @@ function renderLaneFilter() {
   });
 }
 
+// Weist ueberlappende Arbeitspakete einer Lane auf getrennte Subzeilen zu (minimale Anzahl
+// Subzeilen = maximale Anzahl gleichzeitig laufender Arbeitspakete), damit sich Balken bei
+// Datumsueberlappung nicht gegenseitig verdecken.
+function assignSubRows(wps) {
+  var sorted = wps.slice().sort(function (a, b) { return parseISO(a.startDate) - parseISO(b.startDate); });
+  var rowEnds = [];
+  var placements = [];
+  sorted.forEach(function (wp) {
+    var s = parseISO(wp.startDate), e = parseISO(wp.endDate);
+    var row = -1;
+    for (var i = 0; i < rowEnds.length; i++) {
+      if (rowEnds[i] < s) { row = i; break; }
+    }
+    if (row === -1) { row = rowEnds.length; rowEnds.push(e); } else { rowEnds[row] = e; }
+    placements.push({ wp: wp, row: row });
+  });
+  return { placements: placements, rowCount: Math.max(1, rowEnds.length) };
+}
+var SUBROW_HEIGHT = 34;
+
 function renderChart() {
   var lanes = visibleLanes();
   var range = computeRange();
   var totalDays = Math.max(1, Math.round((range.end - range.start) / 86400000));
-  var width = totalDays * PX_PER_DAY;
+  var pxPerDay = computePxPerDay(totalDays);
+  var width = totalDays * pxPerDay;
 
   var namesEl = document.getElementById('lane-names');
   var innerEl = document.getElementById('chart-inner');
@@ -406,7 +452,7 @@ function renderChart() {
     if (cursor.getUTCDate() === 1 || cursor.getTime() === range.start.getTime()) {
       var tick = document.createElement('div');
       tick.className = 'tick';
-      tick.style.left = (Math.round((cursor - range.start) / 86400000) * PX_PER_DAY) + 'px';
+      tick.style.left = (Math.round((cursor - range.start) / 86400000) * pxPerDay) + 'px';
       tick.textContent = cursor.toLocaleDateString('de-CH', { year: 'numeric', month: 'short' });
       header.appendChild(tick);
     }
@@ -414,6 +460,18 @@ function renderChart() {
   }
   innerEl.appendChild(header);
 
+  // Eigene Zeile fuer Meilenstein-Beschriftungen (statt negativem top), damit der Text nicht vom
+  // #chart-scroll-Overflow abgeschnitten wird; #lane-names bekommt eine hoehengleiche Leerzeile,
+  // damit beide Spalten weiterhin zeilenweise ausgerichtet bleiben.
+  var milestoneRow = document.createElement('div');
+  milestoneRow.className = 'milestone-row';
+  milestoneRow.style.width = width + 'px';
+  innerEl.appendChild(milestoneRow);
+  var namesMilestoneSpacer = document.createElement('div');
+  namesMilestoneSpacer.className = 'milestone-row';
+  namesEl.appendChild(namesMilestoneSpacer);
+
+  var lanesTotalHeight = 0;
   lanes.forEach(function (lane) {
     var nameCell = document.createElement('div');
     nameCell.className = 'lane-name-cell';
@@ -426,17 +484,35 @@ function renderChart() {
     row.className = 'lane-row';
     row.style.width = width + 'px';
 
-    lane.workPackages.forEach(function (wp) {
+    var visibleWps = lane.workPackages.filter(function (wp) {
       var s = parseISO(wp.startDate), e = parseISO(wp.endDate);
-      if (e < range.start || s > range.end) return;
-      var left = Math.round((s - range.start) / 86400000) * PX_PER_DAY;
-      var w = Math.max(PX_PER_DAY, Math.round((e - s) / 86400000 + 1) * PX_PER_DAY);
+      return !(e < range.start || s > range.end);
+    });
+    var subRows = assignSubRows(visibleWps);
+    var laneHeight = 6 + subRows.rowCount * SUBROW_HEIGHT;
+    row.style.height = laneHeight + 'px';
+    nameCell.style.height = laneHeight + 'px';
+    lanesTotalHeight += laneHeight;
+
+    subRows.placements.forEach(function (p) {
+      var wp = p.wp;
+      var s = parseISO(wp.startDate), e = parseISO(wp.endDate);
+      var left = Math.round((s - range.start) / 86400000) * pxPerDay;
+      var w = Math.max(pxPerDay, Math.round((e - s) / 86400000 + 1) * pxPerDay);
+      // Auf den sichtbaren Zeitraum begrenzen: Balken, die vor dem Von-Datum beginnen (negatives left),
+      // wuerden sonst in die Lane-Bezeichnungen links hineinragen.
+      var right = Math.min(width, left + w);
+      left = Math.max(0, left);
+      w = Math.max(1, right - left);
       var bar = document.createElement('div');
       bar.className = 'wp-bar';
       bar.style.left = left + 'px';
+      bar.style.top = (6 + p.row * SUBROW_HEIGHT) + 'px';
       bar.style.width = w + 'px';
       bar.style.background = STATUS_COLORS[wp.status] || '#666';
-      bar.title = wp.id + ': ' + wp.name + ' [' + wp.priority + ', ' + wp.effortPT + ' PT, ' + wp.status + ']';
+      bar.title = wp.id + ': ' + wp.name + ' [' + wp.priority + ', ' + wp.effortPT + ' PT, ' + wp.status + ']' +
+        (wp.refId ? ('\nRef: ' + wp.refId + (wp.refName ? (' - ' + wp.refName) : '')) : '') +
+        (wp.description ? ('\n' + wp.description) : '');
       bar.textContent = wp.name;
       bar.addEventListener('click', function () { openWorkPackageForm(lane, wp); });
       row.appendChild(bar);
@@ -449,7 +525,7 @@ function renderChart() {
       if (mDate >= range.start && mDate <= range.end) {
         var pm = document.createElement('div');
         pm.className = 'progress-marker';
-        pm.style.left = (Math.round((mDate - range.start) / 86400000) * PX_PER_DAY + (marker.edge === 'right' ? PX_PER_DAY : 0)) + 'px';
+        pm.style.left = (Math.round((mDate - range.start) / 86400000) * pxPerDay + (marker.edge === 'right' ? pxPerDay : 0)) + 'px';
         row.appendChild(pm);
       }
     }
@@ -461,15 +537,18 @@ function renderChart() {
     if (!m.date) return;
     var d = parseISO(m.date);
     if (d < range.start || d > range.end) return;
+    var left = (Math.round((d - range.start) / 86400000) * pxPerDay) + 'px';
     var line = document.createElement('div');
     line.className = 'milestone-line';
-    line.style.left = (Math.round((d - range.start) / 86400000) * PX_PER_DAY) + 'px';
+    line.style.left = left;
+    line.addEventListener('click', function () { openMilestoneForm(m); });
     var lbl = document.createElement('div');
     lbl.className = 'milestone-label';
-    lbl.style.left = line.style.left;
+    lbl.style.left = left;
     lbl.textContent = m.id + ': ' + m.name;
+    lbl.addEventListener('click', function () { openMilestoneForm(m); });
     innerEl.appendChild(line);
-    innerEl.appendChild(lbl);
+    milestoneRow.appendChild(lbl);
   });
 
   var today = new Date();
@@ -477,11 +556,11 @@ function renderChart() {
   if (todayUtc >= range.start && todayUtc <= range.end) {
     var tl = document.createElement('div');
     tl.className = 'today-line';
-    tl.style.left = (Math.round((todayUtc - range.start) / 86400000) * PX_PER_DAY) + 'px';
+    tl.style.left = (Math.round((todayUtc - range.start) / 86400000) * pxPerDay) + 'px';
     innerEl.appendChild(tl);
   }
 
-  var totalHeight = header.offsetHeight + lanes.length * 40;
+  var totalHeight = header.offsetHeight + milestoneRow.offsetHeight + lanesTotalHeight;
   innerEl.style.minHeight = totalHeight + 'px';
 }
 
@@ -547,6 +626,14 @@ function renderFte() {
 }
 
 // ---- modal forms ----
+// Textareas grow to fit their full content (no inner scrollbar); if that makes the form taller
+// than #modal-box's own max-height, the modal box itself scrolls (see CSS) so the whole dialog
+// never exceeds the viewport.
+function autoGrowTextarea(ta) {
+  var grow = function () { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.addEventListener('input', grow);
+  grow();
+}
 function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 function openModal(title, bodyEl, onSave, onDelete) {
   var box = document.getElementById('modal-box');
@@ -570,6 +657,8 @@ function openModal(title, bodyEl, onSave, onDelete) {
   actions.appendChild(cancel); actions.appendChild(save);
   box.appendChild(actions);
   document.getElementById('modal-overlay').style.display = 'flex';
+  // Grow-to-fit only works once the textarea is laid out (display:flex above), hence done here.
+  Array.prototype.forEach.call(box.querySelectorAll('textarea'), autoGrowTextarea);
 }
 function field(labelText, inputEl) {
   var wrap = document.createElement('div');
@@ -649,12 +738,18 @@ function openWorkPackageForm(lane, wp) {
   var effort = document.createElement('input'); effort.type = 'number'; effort.min = '0'; effort.step = '0.5';
   effort.value = wp ? wp.effortPT : '1';
   var status = selectEl(STATUS_OPTIONS, wp ? wp.status : 'To Do');
+  var desc = document.createElement('textarea'); desc.value = wp ? (wp.description || '') : '';
+  var refId = document.createElement('input'); refId.value = wp ? (wp.refId || '') : '';
+  var refName = document.createElement('input'); refName.value = wp ? (wp.refName || '') : '';
   body.appendChild(field('Name', name));
   body.appendChild(field('Startdatum', start));
   body.appendChild(field('Enddatum', end));
   body.appendChild(field('Prioritaet', prio));
   body.appendChild(field('Aufwand (PT)', effort));
   body.appendChild(field('Status', status));
+  body.appendChild(field('Referenz-ID, z. B. Kriterium/Ticket (optional)', refId));
+  body.appendChild(field('Referenz-Bezeichnung (optional)', refName));
+  body.appendChild(field('Beschreibung (optional)', desc));
   openModal((wp ? 'Arbeitspaket bearbeiten' : 'Arbeitspaket hinzufuegen') + ' - ' + lane.id + ' ' + lane.name, body, function () {
     if (!name.value || !start.value || !end.value) { alert('Name, Start- und Enddatum sind Pflichtfelder.'); return false; }
     if (start.value > end.value) { alert('Startdatum muss vor oder gleich Enddatum liegen.'); return false; }
@@ -662,9 +757,16 @@ function openWorkPackageForm(lane, wp) {
     if (wp) {
       wp.name = name.value; wp.startDate = start.value; wp.endDate = end.value;
       wp.priority = prio.value; wp.effortPT = effortNum; wp.status = status.value;
+      if (desc.value) { wp.description = desc.value; } else { delete wp.description; }
+      if (refId.value) { wp.refId = refId.value; } else { delete wp.refId; }
+      if (refName.value) { wp.refName = refName.value; } else { delete wp.refName; }
     } else {
       var id = getNextId(getAllWorkPackages(state.schedule), 'WP');
-      lane.workPackages.push({ id: id, name: name.value, startDate: start.value, endDate: end.value, priority: prio.value, effortPT: effortNum, status: status.value });
+      var newWp = { id: id, name: name.value, startDate: start.value, endDate: end.value, priority: prio.value, effortPT: effortNum, status: status.value };
+      if (desc.value) { newWp.description = desc.value; }
+      if (refId.value) { newWp.refId = refId.value; }
+      if (refName.value) { newWp.refName = refName.value; }
+      lane.workPackages.push(newWp);
     }
     return true;
   }, wp ? function () {
@@ -678,6 +780,11 @@ document.getElementById('btn-add-milestone').addEventListener('click', function 
 document.getElementById('btn-add-lane').addEventListener('click', function () { openLaneForm(null); });
 document.getElementById('filter-from').addEventListener('change', function (e) { state.filter.fromDate = e.target.value; renderChart(); renderFte(); });
 document.getElementById('filter-to').addEventListener('change', function (e) { state.filter.toDate = e.target.value; renderChart(); renderFte(); });
+var resizeTimer = null;
+window.addEventListener('resize', function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function () { if (state.schedule) renderChart(); }, 150);
+});
 document.getElementById('btn-clear-filter').addEventListener('click', function () {
   state.filter = { laneIds: null, fromDate: '', toDate: '' };
   document.getElementById('filter-from').value = '';
