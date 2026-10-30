@@ -1,6 +1,7 @@
 # Retrospektiven und Action Items – __MANDATE__
 
-> Gepflegt via `/retrospektive`. Quelle sind interne Retrospektiven, nicht Client-Input.
+> Gepflegt via die Skill `retrospektive` (Copilot: `/retrospektive`, Codex: `$retrospektive`).
+> Quelle sind interne Retrospektiven, nicht Client-Input.
 > Bestehende Einträge werden nie überschrieben oder gelöscht, nur ergänzt/angehängt.
 
 ## Zusammenfassung
