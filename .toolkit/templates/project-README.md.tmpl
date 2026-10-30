@@ -23,16 +23,20 @@ fuer den Umgang damit.
 
 Der Memory-Index liegt unter `mem-index/` und ist die **einzige Quelle der Wahrheit** fuer
 dieses Mandat. Alle Regeln dazu (Leseprotokoll, Node-Update/-Split/-Add, Ingest-Workflow,
-File-access restriction) stehen in [`AGENTS.md`](AGENTS.md) — gemeinsame Agent-Instructions
-fuer GitHub Copilot (VS Code) und OpenAI Codex.
+File-access restriction) stehen in [`AGENTS.md`](AGENTS.md). Die Workflows (Skills, z. B.
+`ingest-docs`, `bootstrap-mandate`, `retrospektive`) liegen unter [`.agents/skills/`](.agents/skills/)
+und sind in Copilot und Claude Code per `/<skill>`, in Codex per `$<skill>` aufrufbar.
+Claude Code findet sie ueber die lokale Junction `.claude/skills` -> `.agents/skills`, die
+`bootstrap-wizard.ps1` anlegt (nicht versioniert; nach einem frischen Clone den Wizard erneut
+ausfuehren oder manuell: `cmd /c mklink /J .claude\skills .agents\skills`).
 
 **Erster Schritt nach dem Bootstrap:** Wurde beim Bootstrap ein Client-Input-Ordner
-angegeben, die Skill `bootstrap-mandate` ausfuehren (Copilot: `/bootstrap-mandate`, Codex:
+angegeben, die Skill `bootstrap-mandate` ausfuehren (Copilot/Claude Code: `/bootstrap-mandate`, Codex:
 `$bootstrap-mandate`) — das befuellt die leeren `[PLATZHALTER]` in `mem-index/` und in
 `AGENTS.md` aus dem Client-Input.
 
-**Danach laufend:** Neue Client-Dokumente kommen nach `input_client-docs/`; der Agent ingested
-sie gemaess dem "Ingest workflow" in den Instructions (Node lesen -> aktualisieren -> Mapping
+**Danach laufend:** Neue Client-Dokumente kommen nach `input_client-docs/`; der Agent (Copilot,
+Codex oder Claude Code) ingested sie gemaess dem "Ingest workflow" in den Instructions (Node lesen -> aktualisieren -> Mapping
 in `00_INDEX.md` nachziehen -> offene Fragen ergaenzen -> `log.md`-Eintrag).
 
 Begriffe/Abkuerzungen gehoeren ins Glossar [`mem-index/14_Glossar.md`](mem-index/14_Glossar.md)
@@ -63,11 +67,11 @@ Eintraege werden nie geaendert, neue immer unten angehaengt. Format:
 | Memory-Index als ZIP oder statische Website exportieren | `./export-mem-index.ps1` |
 | Einzelne Markdown-Datei(en)/Ordner als PDF exportieren | `./export-md-to-pdf.ps1` |
 | Memory-Index in ein GitLab-Wiki publizieren | `./publish-wiki.ps1 -WikiUrl <git-url>` |
-| Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Skill `slidev-praesentation` (Copilot: `/slidev-praesentation`, Codex: `$slidev-praesentation`) |
-| draw.io-Diagramm aus Bild/Mermaid/ASCII/Text erzeugen | Skill `diagram-export` (Copilot: `/diagram-export`, Codex: `$diagram-export`) |
-| E-Mail-Entwurf an Projekt-Stakeholder erstellen | Skill `email-entwurf` (Copilot: `/email-entwurf`, Codex: `$email-entwurf`) |
-| Template (`.md`/`.docx`) aus dem Memory-Index befuellen | Skill `fill-template` (Copilot: `/fill-template`, Codex: `$fill-template`) |
-| Template (`.md`/`.docx`) aus einem bestehenden Dokument bauen (anonymisiert, fuer `fill-template`) | Skill `create-template` (Copilot: `/create-template`, Codex: `$create-template`) |
+| Interaktive Praesentation (Slidev) aus dem Memory-Index erzeugen | Skill `slidev-praesentation` (Copilot/Claude Code: `/slidev-praesentation`, Codex: `$slidev-praesentation`) |
+| draw.io-Diagramm aus Bild/Mermaid/ASCII/Text erzeugen | Skill `diagram-export` (Copilot/Claude Code: `/diagram-export`, Codex: `$diagram-export`) |
+| E-Mail-Entwurf an Projekt-Stakeholder erstellen | Skill `email-entwurf` (Copilot/Claude Code: `/email-entwurf`, Codex: `$email-entwurf`) |
+| Template (`.md`/`.docx`) aus dem Memory-Index befuellen | Skill `fill-template` (Copilot/Claude Code: `/fill-template`, Codex: `$fill-template`) |
+| Template (`.md`/`.docx`) aus einem bestehenden Dokument bauen (anonymisiert, fuer `fill-template`) | Skill `create-template` (Copilot/Claude Code: `/create-template`, Codex: `$create-template`) |
 
 Alle drei PowerShell-Tools sind read-only gegenueber `mem-index/` (sie kopieren/exportieren,
 aendern den Index nie). Details/Parameter: `Get-Help ./<script>.ps1 -Full`.
@@ -88,8 +92,8 @@ auto-generierte Zusammenfassung (nie von Hand editieren).
 
 Zwei unabhaengige Wege, um ihn zu pflegen:
 
-- **Konversationell:** die Skill `pflege-master-schedule` ausfuehren (Copilot:
-  `/pflege-master-schedule`, Codex: `$pflege-master-schedule`) - der Agent liest den
+- **Konversationell:** die Skill `pflege-master-schedule` ausfuehren (Copilot/Claude Code: `/pflege-master-schedule`,
+  Codex: `$pflege-master-schedule`) - sie liest den
   aktuellen Stand, erarbeitet Aenderungen mit dir und schreibt erst nach expliziter Bestaetigung.
 - **Interaktiver Wizard + Web-Editor:** `./schedule-wizard.ps1` fuer die Ersterfassung/laufende
   Pflege per Menue; `./build-master-schedule-editor.ps1` erzeugt `master-schedule-editor.html`
@@ -107,9 +111,9 @@ Stelle arbeiten, um Konflikte zu vermeiden (kein Locking vorgesehen).
 _Nur relevant, wenn die Requirements-Engineering-Phase gewaehlt wurde (`openspec-sdd/` vorhanden)._
 
 Fuer einen neuen Themenblock zuerst die Skill `analysis-boot-workstream <Name>` ausfuehren
-(Copilot: `/analysis-boot-workstream`, Codex: `$analysis-boot-workstream`) — das erarbeitet
-die fachlichen Grundlagen und das Vorgehen als zwei Dateien in
-`analyse-sprint/`. Danach die Skill `workstream-openspec-prozess <Name>` ausfuehren: dieser
+(Copilot/Claude Code: `/analysis-boot-workstream`, Codex: `$analysis-boot-workstream`) — das erarbeitet die
+fachlichen Grundlagen und das Vorgehen als zwei Dateien in
+`analyse-sprint/`. Danach die Skill `workstream-openspec-prozess <Name>` ausfuehren: sie
 begleitet Schritt fuer Schritt durch die ersten Schritte des Leitfadens
 ([`analyse-sprint/openspec-prozess-leitfaden.md`](analyse-sprint/openspec-prozess-leitfaden.md)) —
 Triage der offenen IDs, `proposal.md`, `design.md` (Fakten und Optionen), Evidenz sammeln
@@ -143,8 +147,9 @@ So bleibt in beide Richtungen nachvollziehbar, welches Ticket welchen OpenSpec-T
 
 ## 8. Retrospektiven
 
-Im Copilot Chat `/retrospektive [Task-Name]` ausfuehren (Codex: `$retrospektive`). Der Agent
-fuehrt durch bestehende Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
+Die Skill `retrospektive [Task-Name]` ausfuehren (Copilot/Claude Code: `/retrospektive`, Codex:
+`$retrospektive`). Sie fuehrt durch bestehende
+Meeting-Notizen oder eine interaktive Sitzung, clustert "gut"/"besser"-Punkte und leitet mit
 dir priorisierte Action Items ab. Alles landet in
 [`mem-index/15_Retrospektiven-und-Action-Items.md`](mem-index/15_Retrospektiven-und-Action-Items.md)
 (append-only: `R-XX` Retro-Eintraege, `AI-XX` Action Items).
@@ -171,8 +176,8 @@ __TOOLLIST__
 | `build-master-schedule-editor.ps1` | Interaktiven Master-Schedule-Web-Editor (`master-schedule-editor.html`) aus dem Memory-Index bauen |
 | `apply-master-schedule-changes.ps1` | Im Web-Editor gesammelte Master-Schedule-Aenderungen (nach Bestaetigung + Diff-Anzeige) in den Index uebernehmen |
 
-> Zusaetzlich zu den Skripten: Skill `pflege-master-schedule` (Copilot:
-> `/pflege-master-schedule`, Codex: `$pflege-master-schedule`) fuer die
+> Zusaetzlich zu den Skripten: Skill `pflege-master-schedule` (Copilot/Claude Code: `/pflege-master-schedule`,
+> Codex: `$pflege-master-schedule`) fuer die
 > konversationelle Pflege des Master-Schedules, unabhaengig vom Web-Editor (siehe Abschnitt 4).
 
 > `build-findings-dashboard.ps1` erwartet F-/G- als Markdown-**Tabellenzeilen** (`| F-01 | ... |`) in
