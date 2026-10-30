@@ -264,7 +264,7 @@ def main(spec_path, out_path, force):
 
     model.set("pageWidth", str(int(max_r + MARGIN_X)))
     model.set("pageHeight", str(int(y + MARGIN_Y)))
-    mxfile = ET.Element("mxfile", host="app.diagrams.net", agent="Copilot", version="24.0.0")
+    mxfile = ET.Element("mxfile", host="app.diagrams.net", agent="bender", version="24.0.0")
     diagram = ET.SubElement(mxfile, "diagram", id="diagram-1", name=spec.get("page_name", "Diagramm"))
     diagram.append(model)
     ET.indent(mxfile, space="  ")

@@ -16,14 +16,16 @@ This workspace is a **markdown-only research/consulting project**.
 > [!NOTE]
 > Diese Datei (`AGENTS.md`) gilt sowohl für GitHub Copilot (VS Code) als auch für OpenAI Codex —
 > beide lesen sie als geteilte, projektweite Agent-Instructions. Die Skills unter
-> `.agents/skills/` sind ebenfalls fuer beide Plattformen gemeinsam nutzbar.
+> `.agents/skills/` sind ebenfalls fuer beide Plattformen gemeinsam nutzbar. Claude Code findet
+> dieselben Skills ueber die lokale Junction `.claude/skills` -> `.agents/skills`
+> (angelegt von `bootstrap-wizard.ps1`).
 
 ---
 
 ## Mandate Config
 
 Projekt-Metadaten (Kunde, ROLX-Projektnummer, Google-Drive-URL, Projektleiter, gewählte
-Phasen, Taskboard-URL) liegen in [`mandate.config.json`](../mandate.config.json) im
+Phasen, Taskboard-URL) liegen in [`mandate.config.json`](mandate.config.json) im
 Projekt-Root. Beim Verlinken von OpenSpec-Tasks zu technischen Tickets die dortige
 `taskboardUrl` verwenden (siehe README.md, Abschnitt "Task-Linking").
 
@@ -134,7 +136,7 @@ Jede Änderung am Index **muss** in `log.md` protokolliert werden.
 
 > Die Skill `ingest-docs` (`.agents/skills/ingest-docs/`) führt diesen Workflow interaktiv aus
 > (Kandidaten-Erkennung, Vollständigkeits-Check, Pre-Processing-Analyse, Bestätigungs-Gates) —
-> aufrufbar in Copilot per `/ingest-docs`, in Codex per `$ingest-docs` oder implizit.
+> aufrufbar in Copilot/Claude Code per `/ingest-docs`, in Codex per `$ingest-docs` oder implizit.
 
 1. `00_INDEX.md` lesen, Ziel-Node(s) bestimmen.
 2. Ziel-Node(s) vor dem Editieren lesen.

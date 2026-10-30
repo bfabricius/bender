@@ -289,7 +289,7 @@ function Get-Stakeholders {
         $email = '-'
         if ($nameRaw -match '\(([^)]*@[^)]*)\)') { $email = $Matches[1] }
         $cleanName = ($nameRaw -replace '\s*\([^)]*@[^)]*\)\s*', '').Trim()
-        $orgRoleKey = ($row.PSObject.Properties.Name | Where-Object { $_ -match 'Organisation' }) | Select-Object -First 1
+        $orgRoleKey = ($row.PSObject.Properties.Name | Where-Object { $_ -match 'Organisation|Rolle' }) | Select-Object -First 1
         $interestKey = ($row.PSObject.Properties.Name | Where-Object { $_ -match 'Interesse' }) | Select-Object -First 1
         $result += [pscustomobject]@{
             Name      = $cleanName
@@ -407,13 +407,19 @@ function Get-IngestCoverage {
     $files = Get-ChildItem -LiteralPath $InputDocsPath -Recurse -File | Where-Object { $_.Name -notmatch '^~\$' }
     foreach ($f in $files) {
         $rel = $f.FullName.Substring($InputDocsPath.Length).TrimStart('\', '/') -replace '\\', '/'
+        # bootstrap-wizard.ps1 kopiert Client-Input immer nach input_client-docs/<Originalordnername>/,
+        # waehrend die Quelldokument-Mapping-Tabelle in 00_INDEX.md nur den blossen Dateinamen ohne
+        # dieses Unterordner-Praefix enthaelt. Bei praefixlosen Patterns daher zusaetzlich gegen den
+        # blossen Dateinamen matchen, sonst gilt jede Datei faelschlich als nicht erfasst.
+        $relLeaf = ($rel -split '/')[-1]
         $matchRow = $null
         foreach ($m in $mapping) {
             $pattern = $m.SourcePattern -replace '\\', '/'
+            $target = if ($pattern -match '/') { $rel } else { $relLeaf }
             if ($pattern -match '\*') {
-                if ($rel -like $pattern) { $matchRow = $m; break }
+                if ($target -like $pattern) { $matchRow = $m; break }
             }
-            elseif ($rel -ieq $pattern) { $matchRow = $m; break }
+            elseif ($target -ieq $pattern) { $matchRow = $m; break }
         }
         $result.Total++
         if (-not $matchRow) {

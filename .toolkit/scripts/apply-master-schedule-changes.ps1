@@ -98,7 +98,9 @@ function ConvertTo-MutableSchedule {
         foreach ($w in @($l.workPackages)) {
             $workPackages.Add([ordered]@{
                 id = $w.id; name = $w.name; startDate = $w.startDate; endDate = $w.endDate
-                priority = $w.priority; effortPT = $w.effortPT; status = $w.status
+                priority = $w.priority; effortPT = $w.effortPT; status = $w.status; description = $w.description
+                # refId/refName: generische Referenz; soId/soName = Legacy-Namen (< 0.7.0)
+                refId = if ($w.refId) { $w.refId } else { $w.soId }; refName = if ($w.refName) { $w.refName } else { $w.soName }
             })
         }
         $lanes.Add([ordered]@{ id = $l.id; name = $l.name; owner = $l.owner; workPackages = $workPackages })
@@ -118,9 +120,9 @@ function ConvertTo-MasterScheduleMarkdown {
     $lines.Add('')
     $lines.Add('> Auto-generiert aus `09_Master-Schedule.json` (Single Source of Truth). Diese Datei nie von')
     $lines.Add('> Hand editieren - Aenderungen gehen beim naechsten Regenerieren verloren. Stattdessen:')
-    $lines.Add('> `./schedule-wizard.ps1` (interaktiver Wizard), Copilot-Chat `/pflege-master-schedule`')
-    $lines.Add('> (konversationell), oder `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1`')
-    $lines.Add('> (Web-Editor).')
+    $lines.Add('> `./schedule-wizard.ps1` (interaktiver Wizard), Skill `pflege-master-schedule`')
+    $lines.Add('> (konversationell, Copilot: `/pflege-master-schedule`, Codex: `$pflege-master-schedule`), oder')
+    $lines.Add('> `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1` (Web-Editor).')
     $lines.Add('')
     $lines.Add('## Projekt-Rahmendaten')
     $lines.Add('')
@@ -155,17 +157,20 @@ function ConvertTo-MasterScheduleMarkdown {
             if ($lane.workPackages.Count -eq 0) {
                 $lines.Add('_Noch keine Arbeitspakete in dieser Lane._')
             } else {
-                $lines.Add('| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status |')
-                $lines.Add('|---|---|---|---|---|---|---|')
+                $lines.Add('| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status | Ref-ID | Referenz | Beschreibung |')
+                $lines.Add('|---|---|---|---|---|---|---|---|---|---|')
                 foreach ($wp in ($lane.workPackages | Sort-Object { [datetime]$_.startDate })) {
-                    $lines.Add("| $($wp.id) | $($wp.name) | $($wp.startDate) | $($wp.endDate) | $($wp.priority) | $($wp.effortPT) | $($wp.status) |")
+                    $wpDesc = if ($wp.description) { $wp.description } else { '' }
+                    $wpRefId = if ($wp.refId) { $wp.refId } else { '' }
+                    $wpRefName = if ($wp.refName) { $wp.refName } else { '' }
+                    $lines.Add("| $($wp.id) | $($wp.name) | $($wp.startDate) | $($wp.endDate) | $($wp.priority) | $($wp.effortPT) | $($wp.status) | $wpRefId | $wpRefName | $wpDesc |")
                 }
             }
             $lines.Add('')
         }
     }
     $lines.Add('---')
-    $lines.Add("_Zuletzt generiert: $(Get-Date -Format 'yyyy-MM-dd HH:mm') durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / /pflege-master-schedule._")
+    $lines.Add("_Zuletzt generiert: $(Get-Date -Format 'yyyy-MM-dd HH:mm') durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / pflege-master-schedule._")
     return ($lines -join "`n")
 }
 
@@ -271,7 +276,10 @@ $changedWp = @($newWp.Keys | Where-Object {
         $curWp[$_].wp.endDate -ne $newWp[$_].wp.endDate -or
         $curWp[$_].wp.priority -ne $newWp[$_].wp.priority -or
         [string]$curWp[$_].wp.effortPT -ne [string]$newWp[$_].wp.effortPT -or
-        $curWp[$_].wp.status -ne $newWp[$_].wp.status
+        $curWp[$_].wp.status -ne $newWp[$_].wp.status -or
+        $curWp[$_].wp.description -ne $newWp[$_].wp.description -or
+        $curWp[$_].wp.refId -ne $newWp[$_].wp.refId -or
+        $curWp[$_].wp.refName -ne $newWp[$_].wp.refName
     )
 })
 Write-Host ("  Arbeitspakete: {0} neu, {1} entfernt, {2} geaendert" -f $addedWp.Count, $removedWp.Count, $changedWp.Count)

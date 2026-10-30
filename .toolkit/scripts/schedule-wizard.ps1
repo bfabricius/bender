@@ -179,13 +179,17 @@ function ConvertTo-MutableSchedule {
         $workPackages = New-Object System.Collections.Generic.List[object]
         foreach ($w in @($l.workPackages)) {
             $workPackages.Add([ordered]@{
-                id        = $w.id
-                name      = $w.name
-                startDate = $w.startDate
-                endDate   = $w.endDate
-                priority  = $w.priority
-                effortPT  = $w.effortPT
-                status    = $w.status
+                id          = $w.id
+                name        = $w.name
+                startDate   = $w.startDate
+                endDate     = $w.endDate
+                priority    = $w.priority
+                effortPT    = $w.effortPT
+                status      = $w.status
+                description = $w.description
+                # refId/refName: generische Referenz (z. B. Kriterium, Ticket); soId/soName = Legacy-Namen (< 0.7.0)
+                refId       = if ($w.refId) { $w.refId } else { $w.soId }
+                refName     = if ($w.refName) { $w.refName } else { $w.soName }
             })
         }
         $lanes.Add([ordered]@{
@@ -214,9 +218,9 @@ function ConvertTo-MasterScheduleMarkdown {
     $lines.Add('')
     $lines.Add('> Auto-generiert aus `09_Master-Schedule.json` (Single Source of Truth). Diese Datei nie von')
     $lines.Add('> Hand editieren - Aenderungen gehen beim naechsten Regenerieren verloren. Stattdessen:')
-    $lines.Add('> `./schedule-wizard.ps1` (interaktiver Wizard), Copilot-Chat `/pflege-master-schedule`')
-    $lines.Add('> (konversationell), oder `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1`')
-    $lines.Add('> (Web-Editor).')
+    $lines.Add('> `./schedule-wizard.ps1` (interaktiver Wizard), Skill `pflege-master-schedule`')
+    $lines.Add('> (konversationell, Copilot: `/pflege-master-schedule`, Codex: `$pflege-master-schedule`), oder')
+    $lines.Add('> `master-schedule-editor.html` + `./apply-master-schedule-changes.ps1` (Web-Editor).')
     $lines.Add('')
     $lines.Add('## Projekt-Rahmendaten')
     $lines.Add('')
@@ -251,17 +255,20 @@ function ConvertTo-MasterScheduleMarkdown {
             if ($lane.workPackages.Count -eq 0) {
                 $lines.Add('_Noch keine Arbeitspakete in dieser Lane._')
             } else {
-                $lines.Add('| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status |')
-                $lines.Add('|---|---|---|---|---|---|---|')
+                $lines.Add('| ID | Name | Start | Ende | Prioritaet | Aufwand (PT) | Status | Ref-ID | Referenz | Beschreibung |')
+                $lines.Add('|---|---|---|---|---|---|---|---|---|---|')
                 foreach ($wp in ($lane.workPackages | Sort-Object { [datetime]$_.startDate })) {
-                    $lines.Add("| $($wp.id) | $($wp.name) | $($wp.startDate) | $($wp.endDate) | $($wp.priority) | $($wp.effortPT) | $($wp.status) |")
+                    $wpDesc = if ($wp.description) { $wp.description } else { '' }
+                    $wpRefId = if ($wp.refId) { $wp.refId } else { '' }
+                    $wpRefName = if ($wp.refName) { $wp.refName } else { '' }
+                    $lines.Add("| $($wp.id) | $($wp.name) | $($wp.startDate) | $($wp.endDate) | $($wp.priority) | $($wp.effortPT) | $($wp.status) | $wpRefId | $wpRefName | $wpDesc |")
                 }
             }
             $lines.Add('')
         }
     }
     $lines.Add('---')
-    $lines.Add("_Zuletzt generiert: $(Get-Date -Format 'yyyy-MM-dd HH:mm') durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / /pflege-master-schedule._")
+    $lines.Add("_Zuletzt generiert: $(Get-Date -Format 'yyyy-MM-dd HH:mm') durch schedule-wizard.ps1 / apply-master-schedule-changes.ps1 / pflege-master-schedule._")
     return ($lines -join "`n")
 }
 
@@ -449,8 +456,11 @@ function Invoke-WorkPackagesMenu {
                 $priority = Read-EnumChoice -Prompt 'Prioritaet' -Options $PriorityOptions -Default 'Should'
                 $effort = Read-NumberValue -Prompt 'Aufwand in Personentagen (PT)'
                 $status = Read-EnumChoice -Prompt 'Status' -Options $StatusOptions -Default 'To Do'
+                $desc = Read-WithDefault -Prompt 'Beschreibung (optional)'
+                $refId = Read-WithDefault -Prompt 'Referenz-ID, z. B. Kriterium/Ticket (optional)'
+                $refName = Read-WithDefault -Prompt 'Referenz-Bezeichnung (optional)'
                 $id = Get-NextId -Items (Get-AllWorkPackages) -Prefix 'WP'
-                $lane.workPackages.Add([ordered]@{ id = $id; name = $name; startDate = $start; endDate = $end; priority = $priority; effortPT = $effort; status = $status })
+                $lane.workPackages.Add([ordered]@{ id = $id; name = $name; startDate = $start; endDate = $end; priority = $priority; effortPT = $effort; status = $status; description = $desc; refId = $refId; refName = $refName })
                 Write-Host "Arbeitspaket $id hinzugefuegt." -ForegroundColor Green
             }
             '2' {
@@ -462,6 +472,9 @@ function Invoke-WorkPackagesMenu {
                     $w.priority = Read-EnumChoice -Prompt 'Prioritaet' -Options $PriorityOptions -Default $w.priority
                     $w.effortPT = Read-NumberValue -Prompt 'Aufwand in Personentagen (PT)' -Default $w.effortPT
                     $w.status = Read-EnumChoice -Prompt 'Status' -Options $StatusOptions -Default $w.status
+                    $w.description = Read-WithDefault -Prompt 'Beschreibung' -Default $w.description
+                    $w.refId = Read-WithDefault -Prompt 'Referenz-ID' -Default $w.refId
+                    $w.refName = Read-WithDefault -Prompt 'Referenz-Bezeichnung' -Default $w.refName
                 }
             }
             '3' {

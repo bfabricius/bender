@@ -15,6 +15,7 @@
       AGENTS.md + .agents/skills/*/SKILL.md (phase-dependent) - shared project instructions
                                       and reusable skills, natively read by both GitHub
                                       Copilot (VS Code) and OpenAI Codex
+      .claude/skills                 junction -> .agents/skills (Claude Code skill discovery)
       client-meetings/, export-artefacts/, input_client-docs/
       *.ps1                          drop-in tooling, copied to the project root
       openspec-sdd/                  only if the Requirements-Engineering phase is chosen
@@ -141,6 +142,40 @@ function Copy-TemplateSkill {
             }
         }
     }
+}
+
+function New-SkillsJunction {
+    # Claude Code only discovers project skills under .claude/skills/, Copilot/Codex use
+    # .agents/skills/. A directory junction (no admin rights needed on Windows) lets all three
+    # share the same files; skill scripts keep their .agents/skills/... paths.
+    param([string]$LinkPath, [string]$TargetPath)
+    $existing = Get-Item -LiteralPath $LinkPath -Force -ErrorAction SilentlyContinue
+    if ($existing) {
+        if ($existing.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            Write-Host "  skip (exists): $LinkPath" -ForegroundColor DarkGray
+        } else {
+            Write-Warning "$LinkPath existiert bereits als normaler Ordner - Junction nicht angelegt (Inhalt bitte manuell pruefen)."
+        }
+        $script:skipped++
+        return
+    }
+    if (-not $PSCmdlet.ShouldProcess($LinkPath, "Create junction -> $TargetPath")) { return }
+    $parent = Split-Path -Parent $LinkPath
+    if (-not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+    New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
+    Write-Host "  created: $LinkPath -> $TargetPath (Junction fuer Claude Code)" -ForegroundColor Green
+    $script:created++
+}
+
+function Add-GitignoreEntry {
+    param([string]$Path, [string]$Entry, [string]$Comment)
+    if (-not (Test-Path -LiteralPath $Path)) { return }
+    $lines = @(Get-Content -LiteralPath $Path -Encoding UTF8)
+    if ($lines -contains $Entry) { return }
+    if (-not $PSCmdlet.ShouldProcess($Path, "Append '$Entry'")) { return }
+    $content = (Get-Content -LiteralPath $Path -Raw -Encoding UTF8).TrimEnd() + "`n`n$Comment`n$Entry`n"
+    Write-FileUtf8NoBom -Path $Path -Content $content
+    Write-Host "  updated: $Path (+ $Entry)" -ForegroundColor Green
 }
 
 function Read-YesNo {
@@ -307,6 +342,8 @@ if ($doRequirementsEngineering) {
     }
 }
 
+New-SkillsJunction -LinkPath (Join-Path $root '.claude/skills') -TargetPath (Join-Path $root '.agents/skills')
+
 # ==========================================================================
 #  Step 3 - .gitignore
 # ==========================================================================
@@ -321,6 +358,8 @@ if (-not (Test-Path -LiteralPath $gitignorePath)) {
     Write-Host "  skip (exists): $gitignorePath" -ForegroundColor DarkGray
     $script:skipped++
 }
+# The junction is machine-local (git cannot version it); each clone recreates it via this wizard.
+Add-GitignoreEntry -Path $gitignorePath -Entry '.claude/skills' -Comment '# --- Claude Code: lokale Junction auf .agents/skills (per bootstrap-wizard.ps1) ---'
 
 # ==========================================================================
 #  Step 4 - base folders
@@ -585,7 +624,7 @@ Copy-TemplateFile -TemplatePath (Join-Path $tplDir 'project-README.md.tmpl') -De
 Write-Host ''
 Write-Host "=== Fertig: $script:created Datei(en)/Ordner erstellt, $script:skipped uebersprungen ===" -ForegroundColor Cyan
 if ($clientFolderValid -and $seedFromClient) {
-    Write-Host 'Naechster Schritt: die Skill bootstrap-mandate ausfuehren (Copilot: /bootstrap-mandate, Codex: $bootstrap-mandate), um den Memory-Index zu befuellen.' -ForegroundColor Cyan
+    Write-Host 'Naechster Schritt: die Skill bootstrap-mandate ausfuehren (Copilot/Claude Code: /bootstrap-mandate, Codex: $bootstrap-mandate), um den Memory-Index zu befuellen.' -ForegroundColor Cyan
 }
 Write-Host 'Oeffne README.md fuer die Kurzanleitung zum KI-basierten Projekt-Assistenten.' -ForegroundColor Cyan
 
