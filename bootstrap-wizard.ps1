@@ -590,8 +590,17 @@ if ($PSCmdlet.ShouldProcess($configPath, 'Create/update mandate.config.json')) {
 Write-Host ''
 Write-Host '--- Schritt 9/9: Git ---' -ForegroundColor Cyan
 
-if (Test-Path -LiteralPath (Join-Path $root '.git')) {
-    Write-Host '  (bereits ein Git-Repository, uebersprungen)' -ForegroundColor DarkGray
+# Also detects a parent repo (bender installed into a subfolder of an existing project repo):
+# a nested `git init` there would confuse git clients.
+$insideRepo = Test-Path -LiteralPath (Join-Path $root '.git')
+if (-not $insideRepo -and (Get-Command git -ErrorAction SilentlyContinue)) {
+    # Local 'Continue': under 'Stop', Windows PowerShell 5.1 turns git's stderr into a terminating error.
+    $ErrorActionPreference = 'Continue'
+    $insideRepo = (& git -C $root rev-parse --is-inside-work-tree 2>$null) -eq 'true'
+    $ErrorActionPreference = 'Stop'
+}
+if ($insideRepo) {
+    Write-Host '  (bereits Teil eines Git-Repositorys, uebersprungen)' -ForegroundColor DarkGray
 } elseif (Get-Command git -ErrorAction SilentlyContinue) {
     if (Read-YesNo 'Git-Repository hier initialisieren (git init)?' $true) {
         if ($PSCmdlet.ShouldProcess($root, 'git init')) {

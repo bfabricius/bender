@@ -10,6 +10,29 @@ gebootstrapptes Mandat beim Nachziehen auf diese Version tun muss.
 
 ---
 
+## [0.8.0] - 2026-10-30
+
+### Hinzugefuegt
+- **`install.ps1` im Repo-Root:** laedt den aktuellen Stand eines Branches (Default `main`) als
+  Zip-Archiv von GitHub und kopiert nur `bootstrap-wizard.ps1` und `.toolkit/` in den Zielordner -
+  ohne `.git`-Ordner und ohne die Root-Dateien des Toolkit-Repos (`README.md`, `.gitignore`).
+  Damit entsteht kein verschachteltes Repo im Projekt-Repo, und der Wizard legt `README.md` und
+  `.gitignore` aus den Templates an (beim Klonen wurden sie bisher als „exists“ uebersprungen).
+  Erneutes Ausfuehren aktualisiert `.toolkit/` und `bootstrap-wizard.ps1`. Parameter:
+  `-TargetDir`, `-Branch`, `-RunWizard`.
+
+### Behoben
+- `bootstrap-wizard.ps1`, Schritt Git: erkennt jetzt auch ein uebergeordnetes Repo
+  (`git rev-parse --is-inside-work-tree`) und bietet dort kein `git init` mehr an. Vorher entstand
+  bei einem Mandat in einem Unterordner eines bestehenden Repos ein verschachteltes Repo.
+
+### Kompatibilitaet / Upgrade von 0.7.x
+- Keine Migration noetig. Bestehende Mandate koennen mit `./install.ps1` (bzw. dem Einzeiler aus
+  `.toolkit/README.md`) im Mandats-Root auf 0.8.0 gezogen werden; danach `toolkitVersion` in
+  `mandate.config.json` auf `0.8.0` setzen.
+
+---
+
 ## [0.7.0] - 2026-10-30
 
 Backport der Verbesserungen aus dem Mandat „RFP - Stadt Biel - KI-Suchloesung“ (gebootstrappt mit 0.3.0).

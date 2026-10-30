@@ -8,7 +8,20 @@ Claude Code (ueber die lokale Junction `.claude/skills` -> `.agents/skills`).
 
 ## Nutzung fuer ein neues Mandat
 
-1. Dieses Repo klonen (der Klon wird direkt das neue Mandats-Repo).
+1. Toolkit im (leeren oder bestehenden) Projektordner installieren - als reine Dateien, ohne
+   `.git` des Toolkit-Repos (kein verschachteltes Repo im Projekt-Repo):
+
+   ```powershell
+   irm https://raw.githubusercontent.com/bfabricius/bender/main/install.ps1 | iex
+   ```
+
+   Mit Parametern (`-TargetDir`, `-Branch`, `-RunWizard`):
+
+   ```powershell
+   & ([scriptblock]::Create((irm https://raw.githubusercontent.com/bfabricius/bender/main/install.ps1))) -TargetDir C:\Projekte\mein-mandat -RunWizard
+   ```
+
+   Erneutes Ausfuehren aktualisiert `.toolkit/` und `bootstrap-wizard.ps1` auf den aktuellen Stand.
 2. `./bootstrap-wizard.ps1` ausfuehren und die Fragen beantworten (Projekt-Metadaten,
    Client-Input-Ordner, Phasen, Taskboard-URL).
 3. Die generierte `README.md` im Projekt-Root oeffnet sich automatisch — sie erklaert den
