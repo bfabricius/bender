@@ -1,6 +1,3 @@
 /reference-img/
 /raw-input-docs
-.toolkit/templates/agents/skills/diagram-export/scripts/__pycache__
-.toolkit/templates/agents/skills/email-entwurf/scripts/__pycache__
-.toolkit/templates/agents/skills/fill-template/scripts/__pycache__
-.toolkit/templates/agents/skills/create-template/scripts/__pycache__
+__pycache__/
